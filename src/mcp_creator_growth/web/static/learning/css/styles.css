@@ -1473,12 +1473,6 @@ svg {
     gap: 8px;
 }
 
-.term-name-cn {
-    font-size: 13px;
-    color: hsl(var(--muted-foreground));
-    font-weight: 500;
-}
-
 .term-domain {
     font-size: 10px;
     font-weight: 500;
@@ -1495,15 +1489,6 @@ svg {
     line-height: 1.6;
     color: hsl(var(--muted-foreground));
     margin-top: 8px;
-}
-
-.term-definition-cn {
-    font-size: 12px;
-    line-height: 1.5;
-    color: hsl(var(--muted-foreground) / 0.8);
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px dashed hsl(var(--border));
 }
 
 /* Terms section title with count badge */

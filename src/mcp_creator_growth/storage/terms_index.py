@@ -808,21 +808,24 @@ def get_session_terms(
     count: int = 3,
     domain: str | None = None,
     auto_mark: bool = True,
+    lang: str = "en",
 ) -> list[dict[str, Any]]:
     """
-    Get terms for a learning session.
+    Get terms for a learning session in a single language.
 
-    This is a convenience function that gets unshown terms
-    and optionally marks them as shown.
+    This is a convenience function that gets unshown terms,
+    optionally marks them as shown, and returns them in the
+    specified language format to minimize token usage.
 
     Args:
         project_directory: Project directory path
         count: Number of terms to get (1-5)
         domain: Optional domain filter
         auto_mark: Whether to automatically mark terms as shown
+        lang: Language code ("zh" for Chinese, "en" for English)
 
     Returns:
-        List of term dictionaries
+        List of term dictionaries with only the requested language
     """
     manager = TermsIndexManager(project_directory)
     terms = manager.get_unshown_terms(count=count, domain=domain)
@@ -830,4 +833,15 @@ def get_session_terms(
     if auto_mark and terms:
         manager.mark_as_shown([t["id"] for t in terms])
 
-    return terms
+    # Convert to single-language format to save tokens
+    is_chinese = lang.startswith("zh")
+    result = []
+    for t in terms:
+        result.append({
+            "id": t["id"],
+            "domain": t["domain"],
+            "term": t["term_cn"] if is_chinese else t["term"],
+            "definition": t["definition_cn"] if is_chinese else t["definition_en"],
+        })
+
+    return result

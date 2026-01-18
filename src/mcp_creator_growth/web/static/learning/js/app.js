@@ -177,28 +177,18 @@ function renderTerms(terms) {
             .replace(/\b\w/g, l => l.toUpperCase());
     };
 
-    // Get current language
-    const lang = i18n.getCurrentLanguage();
-    const isChinese = lang.startsWith('zh');
-
+    // Render terms - expects single-language format from server
     container.innerHTML = terms.map(term => `
         <div class="term-card" data-domain="${escapeHtml(term.domain || '')}">
             <div class="term-header">
                 <div class="term-name">
                     <span>${escapeHtml(term.term)}</span>
-                    ${term.term_cn ? `<span class="term-name-cn">(${escapeHtml(term.term_cn)})</span>` : ''}
                 </div>
                 <span class="term-domain">${escapeHtml(formatDomain(term.domain || 'general'))}</span>
             </div>
             <div class="term-definition">
-                ${escapeHtml(isChinese ? (term.definition_cn || term.definition_en) : term.definition_en)}
+                ${escapeHtml(term.definition)}
             </div>
-            ${!isChinese && term.definition_cn ? `
-                <div class="term-definition-cn">${escapeHtml(term.definition_cn)}</div>
-            ` : ''}
-            ${isChinese && term.definition_en ? `
-                <div class="term-definition-cn">${escapeHtml(term.definition_en)}</div>
-            ` : ''}
         </div>
     `).join('');
 }

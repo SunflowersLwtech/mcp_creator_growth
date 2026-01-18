@@ -60,7 +60,8 @@ if ($localCommit -eq $remoteCommit) {
     exit 0
 }
 
-git pull origin main
+# Reset any local changes (safe for installed copy)
+git reset --hard origin/main
 Write-Host "  Changes pulled." -ForegroundColor Green
 
 # Update dependencies

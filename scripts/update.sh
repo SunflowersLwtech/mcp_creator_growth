@@ -50,8 +50,12 @@ if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
     exit 0
 fi
 
-git pull origin main
+# Reset any local changes (safe for installed copy)
+git reset --hard origin/main
 echo "  Changes pulled."
+
+# Ensure scripts are executable
+chmod +x "$INSTALL_PATH/scripts/"*.sh 2>/dev/null || true
 
 # Update dependencies
 echo ""

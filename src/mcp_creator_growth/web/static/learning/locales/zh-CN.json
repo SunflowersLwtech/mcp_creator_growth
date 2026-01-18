@@ -18,6 +18,10 @@
         "loading": "加载会话数据...",
         "noData": "无会话数据"
     },
+    "terms": {
+        "title": "关键术语",
+        "noData": "无术语数据"
+    },
     "reasoning": {
         "title": "推理洞察 (5-Why)",
         "goal": "目标",

@@ -131,6 +131,7 @@ function renderSession(session) {
     document.getElementById('session-id-display').setAttribute('data-full-id', session.session_id || '');
 
     renderSummary(session);
+    renderTerms(session.terms || []);
     renderReasoning(session.reasoning);
     renderQuizzes(session.quizzes || []);
 }
@@ -156,6 +157,50 @@ function renderSummary(session) {
         skeletonContainer.style.display = 'none';
     }
     summaryText.style.display = 'block';
+}
+
+function renderTerms(terms) {
+    const section = document.getElementById('terms-section');
+    const container = document.getElementById('terms-container');
+
+    if (!terms || terms.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+
+    // Format domain name for display
+    const formatDomain = (domain) => {
+        return domain
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    // Get current language
+    const lang = i18n.getCurrentLanguage();
+    const isChinese = lang.startsWith('zh');
+
+    container.innerHTML = terms.map(term => `
+        <div class="term-card" data-domain="${escapeHtml(term.domain || '')}">
+            <div class="term-header">
+                <div class="term-name">
+                    <span>${escapeHtml(term.term)}</span>
+                    ${term.term_cn ? `<span class="term-name-cn">(${escapeHtml(term.term_cn)})</span>` : ''}
+                </div>
+                <span class="term-domain">${escapeHtml(formatDomain(term.domain || 'general'))}</span>
+            </div>
+            <div class="term-definition">
+                ${escapeHtml(isChinese ? (term.definition_cn || term.definition_en) : term.definition_en)}
+            </div>
+            ${!isChinese && term.definition_cn ? `
+                <div class="term-definition-cn">${escapeHtml(term.definition_cn)}</div>
+            ` : ''}
+            ${isChinese && term.definition_en ? `
+                <div class="term-definition-cn">${escapeHtml(term.definition_en)}</div>
+            ` : ''}
+        </div>
+    `).join('');
 }
 
 function renderReasoning(reasoning) {

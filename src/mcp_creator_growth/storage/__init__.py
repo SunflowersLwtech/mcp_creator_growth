@@ -30,6 +30,11 @@ from .storage_manager import (
     list_all_projects,
     search_across_projects,
 )
+from .terms_index import (
+    TermsIndexManager,
+    get_session_terms,
+    TERMS_GLOSSARY,
+)
 
 __all__ = [
     # High-level storage manager (recommended)
@@ -63,6 +68,10 @@ __all__ = [
     "ProjectMetaManager",
     # Session storage
     "SessionStorageManager",
+    # Terms glossary
+    "TermsIndexManager",
+    "get_session_terms",
+    "TERMS_GLOSSARY",
 ]
 
 

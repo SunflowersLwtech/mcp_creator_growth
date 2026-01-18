@@ -16,7 +16,7 @@ param(
 $ErrorActionPreference = "Stop"
 $PythonVersionRequired = "3.11"
 $EnvManager = ""
-$PythonPath = ""
+$ScriptPath = ""
 
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host "  MCP Creator Growth - Installation Script" -ForegroundColor Cyan
@@ -115,7 +115,7 @@ switch ($EnvManager) {
         } else {
             Write-Host "  Virtual environment already exists." -ForegroundColor Gray
         }
-        $PythonPath = "$InstallPath\.venv\Scripts\python.exe"
+        $ScriptPath = "$InstallPath\.venv\Scripts\mcp-creator-growth.exe"
     }
     "conda" {
         $envExists = conda env list | Select-String "mcp-creator-growth"
@@ -128,7 +128,7 @@ switch ($EnvManager) {
         # Get conda env path
         $condaInfo = conda env list | Select-String "mcp-creator-growth"
         $CondaEnvPath = ($condaInfo -split '\s+')[-1]
-        $PythonPath = "$CondaEnvPath\python.exe"
+        $ScriptPath = "$CondaEnvPath\Scripts\mcp-creator-growth.exe"
     }
     "venv" {
         if (-not (Test-Path "venv")) {
@@ -137,7 +137,7 @@ switch ($EnvManager) {
         } else {
             Write-Host "  Virtual environment already exists." -ForegroundColor Gray
         }
-        $PythonPath = "$InstallPath\venv\Scripts\python.exe"
+        $ScriptPath = "$InstallPath\venv\Scripts\mcp-creator-growth.exe"
     }
 }
 
@@ -172,22 +172,21 @@ Write-Host "  Installation Complete!" -ForegroundColor Green
 Write-Host "================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Environment: $EnvManager" -ForegroundColor Cyan
-Write-Host "Python path: $PythonPath" -ForegroundColor Cyan
+Write-Host "Command:     $ScriptPath" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host "  Configure Your IDE" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Add this MCP server configuration to your IDE:" -ForegroundColor Yellow
+Write-Host "For Claude Code (one command):" -ForegroundColor Yellow
+Write-Host "  claude mcp add mcp-creator-growth -- `"$ScriptPath`"" -ForegroundColor White
 Write-Host ""
-Write-Host "  Python command: $PythonPath" -ForegroundColor White
-Write-Host "  Arguments:      -m mcp_creator_growth" -ForegroundColor White
-Write-Host ""
-Write-Host "For Claude Code:" -ForegroundColor Yellow
-Write-Host "  claude mcp add mcp-creator-growth -- `"$PythonPath`" -m mcp_creator_growth" -ForegroundColor White
-Write-Host ""
-Write-Host "For other IDEs (Cursor, Windsurf, etc.):" -ForegroundColor Yellow
-Write-Host "  See README.md for detailed configuration instructions." -ForegroundColor White
+Write-Host "For other IDEs (Cursor, Windsurf, etc.), add this to MCP config:" -ForegroundColor Yellow
+Write-Host "  {" -ForegroundColor Gray
+Write-Host "    `"mcp-creator-growth`": {" -ForegroundColor Gray
+Write-Host "      `"command`": `"$($ScriptPath -replace '\\', '\\\\')`"" -ForegroundColor Gray
+Write-Host "    }" -ForegroundColor Gray
+Write-Host "  }" -ForegroundColor Gray
 Write-Host ""
 Write-Host "To update later, run:" -ForegroundColor Yellow
 Write-Host "  $InstallPath\scripts\update.ps1" -ForegroundColor White

@@ -12,7 +12,7 @@ set -e
 INSTALL_PATH="${MCP_INSTALL_PATH:-$HOME/mcp-creator-growth}"
 PYTHON_VERSION_REQUIRED="3.11"
 ENV_MANAGER=""
-PYTHON_PATH=""
+SCRIPT_PATH=""
 
 echo "================================================"
 echo "  MCP Creator Growth - Installation Script"
@@ -112,7 +112,7 @@ case "$ENV_MANAGER" in
         else
             echo "  Virtual environment already exists."
         fi
-        PYTHON_PATH="$INSTALL_PATH/.venv/bin/python"
+        SCRIPT_PATH="$INSTALL_PATH/.venv/bin/mcp-creator-growth"
         ;;
     "conda")
         if ! conda env list | grep -q "mcp-creator-growth"; then
@@ -123,7 +123,7 @@ case "$ENV_MANAGER" in
         fi
         # Get conda env path
         CONDA_ENV_PATH=$(conda env list | grep "mcp-creator-growth" | awk '{print $NF}')
-        PYTHON_PATH="$CONDA_ENV_PATH/bin/python"
+        SCRIPT_PATH="$CONDA_ENV_PATH/bin/mcp-creator-growth"
         ;;
     "venv")
         if [ ! -d "venv" ]; then
@@ -132,7 +132,7 @@ case "$ENV_MANAGER" in
         else
             echo "  Virtual environment already exists."
         fi
-        PYTHON_PATH="$INSTALL_PATH/venv/bin/python"
+        SCRIPT_PATH="$INSTALL_PATH/venv/bin/mcp-creator-growth"
         ;;
 esac
 
@@ -166,22 +166,21 @@ echo "  Installation Complete!"
 echo "================================================"
 echo ""
 echo "Environment: $ENV_MANAGER"
-echo "Python path: $PYTHON_PATH"
+echo "Command:     $SCRIPT_PATH"
 echo ""
 echo "================================================"
 echo "  Configure Your IDE"
 echo "================================================"
 echo ""
-echo "Add this MCP server configuration to your IDE:"
+echo "For Claude Code (one command):"
+echo "  claude mcp add mcp-creator-growth -- $SCRIPT_PATH"
 echo ""
-echo "  Python command: $PYTHON_PATH"
-echo "  Arguments:      -m mcp_creator_growth"
-echo ""
-echo "For Claude Code:"
-echo "  claude mcp add mcp-creator-growth -- $PYTHON_PATH -m mcp_creator_growth"
-echo ""
-echo "For other IDEs (Cursor, Windsurf, etc.):"
-echo "  See README.md for detailed configuration instructions."
+echo "For other IDEs (Cursor, Windsurf, etc.), add this to MCP config:"
+echo "  {"
+echo "    \"mcp-creator-growth\": {"
+echo "      \"command\": \"$SCRIPT_PATH\""
+echo "    }"
+echo "  }"
 echo ""
 echo "To update later, run:"
 echo "  $INSTALL_PATH/scripts/update.sh"

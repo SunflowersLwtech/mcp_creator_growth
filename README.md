@@ -71,10 +71,10 @@ After installation, configure your AI coding IDE to use this MCP server.
 **Option 1: CLI (Recommended)**
 ```bash
 # macOS / Linux
-claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/python -m mcp_creator_growth
+claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
 
 # Windows
-claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\python.exe -m mcp_creator_growth
+claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
 ```
 
 **Option 2: Config File**
@@ -84,9 +84,18 @@ Add to `~/.claude.json`:
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "type": "stdio",
-      "command": "~/mcp-creator-growth/.venv/bin/python",
-      "args": ["-m", "mcp_creator_growth"]
+      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+    }
+  }
+}
+```
+
+For Windows:
+```json
+{
+  "mcpServers": {
+    "mcp-creator-growth": {
+      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
     }
   }
 }
@@ -99,18 +108,16 @@ Add to Cursor MCP settings (Settings → MCP → Add Server):
 ```json
 {
   "mcp-creator-growth": {
-    "command": "~/mcp-creator-growth/.venv/bin/python",
-    "args": ["-m", "mcp_creator_growth"]
+    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
   }
 }
 ```
 
-For Windows, use:
+For Windows:
 ```json
 {
   "mcp-creator-growth": {
-    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\python.exe",
-    "args": ["-m", "mcp_creator_growth"]
+    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
   }
 }
 ```
@@ -123,8 +130,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/python",
-      "args": ["-m", "mcp_creator_growth"]
+      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
     }
   }
 }
@@ -133,8 +139,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 ### Other IDEs
 
 For any MCP-compatible IDE, use these settings:
-- **Command:** `<install-path>/.venv/bin/python` (or `.venv\Scripts\python.exe` on Windows)
-- **Arguments:** `-m mcp_creator_growth`
+- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (or `.venv\Scripts\mcp-creator-growth.exe` on Windows)
 - **Transport:** stdio
 
 **After configuration, restart your IDE.**

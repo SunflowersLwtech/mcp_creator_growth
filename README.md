@@ -2,39 +2,43 @@
 
 [English](README.md) | [简体中文](README_zh-CN.md) | [繁體中文](README_zh-TW.md)
 
-A context-aware learning assistant for AI coding that helps developers **learn from AI-generated code changes** through interactive quizzes and debug experience tracking.
+A context-aware **Model Context Protocol (MCP)** server that acts as a learning sidecar for AI coding assistants. It helps developers **learn from AI-generated code changes** through interactive quizzes and provides agents with a persistent **project-specific debugging memory**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![MCP Standard](https://img.shields.io/badge/MCP-Standard-green.svg)](https://modelcontextprotocol.io/)
 
-## Design Philosophy
+## 🚀 Why Use This?
 
-> **Learning is for the User. Debug is for the Agent.**
+1.  **For Developers (Learning)**: Don't just accept AI code—understand it. When you ask "Quiz me on this change," this server creates an interactive learning card to verify your grasp of the logic, security, or performance implications.
+2.  **For Agents (Memory)**: Stop solving the same bug twice. The server quietly records debugging solutions in the background and retrieves them automatically when similar errors occur in the future.
 
-This project follows two core principles:
+## ✨ Features
 
-| Component | Purpose | Beneficiary |
-|-----------|---------|-------------|
-| `learning_session` | Help users understand AI-generated changes | **User** |
-| `debug_search/record` | Build project-specific knowledge base | **Agent** |
+### 🧠 Interactive Learning Session
+- **Tool**: `learning_session`
+- **Behavior**: Pauses the agent and opens a local Web UI with a quiz based on recent code changes.
+- **Trigger**: Explicit user request (e.g., "Teach me about this fix", "Quiz me").
+- **Benefit**: Ensures you understand *why* a change was made before moving on.
 
-### Low Intrusion, High Value
+![WebUI Preview](assets/webui.png)
 
-- **Minimal context pollution**: Return values are deliberately compact to reduce token usage
-- **Progressive disclosure**: Debug search returns summaries first, not full records
-- **Inverted index**: Fast keyword-based lookups without loading all records
-- **Local-first**: All data stored in `.mcp-sidecar/` - your data stays yours
+### 🐞 Debugging Memory (RAG)
+- **Tools**: `debug_search`, `debug_record`
+- **Behavior**:
+    - **Search**: When an error occurs, the agent silently searches past solutions in your project.
+    - **Record**: After fixing a bug, the agent records the cause and solution.
+- **Privacy**: All data is stored locally in `.mcp-sidecar/`.
+- **Benefit**: Builds a "group memory" for your project that gets smarter over time.
 
-## Features
+### 📚 Terminology Dictionary
+- **Tool**: `term_get`
+- **Behavior**: Fetches programming terms and concepts relevant to your current work context.
+- **Benefit**: Helps fill knowledge gaps without leaving your IDE.
 
-- **Blocking Learning Sessions** - Agent pauses until you complete the learning card
-- **Interactive Quizzes** - Verify your understanding with targeted questions
-- **5-Why Reasoning** - Understand the "why" behind code decisions
-- **Debug Experience RAG** - Search and record debugging solutions for reuse
-- **Token-Efficient** - Returns minimal data to reduce context pollution
-- **Optimized Indexing** - Inverted index for fast keyword searches
+---
 
-## Quick Start
+## 🛠️ Quick Start
 
 ### One-Line Installation
 
@@ -48,93 +52,53 @@ curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth
 irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.ps1 | iex
 ```
 
-The installer will:
-1. Auto-detect your environment (uv / conda / system Python)
-2. Install Python 3.11+ via uv if needed
-3. Create a virtual environment
-4. Install all dependencies
-5. Display the configuration command for your IDE
-
 ### Manual Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
-   cd mcp_creator_growth
-   ```
+Prerequisites: `uv` (recommended) or Python 3.11+.
 
-2. **Create virtual environment:**
-   ```bash
-   # Using uv (recommended)
-   uv venv --python 3.11 .venv
-   source .venv/bin/activate  # or .venv\Scripts\activate on Windows
-   uv pip install -e ".[dev]"
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
+    cd mcp_creator_growth
+    ```
 
-   # Or using standard venv
-   python -m venv venv
-   source venv/bin/activate  # or venv\Scripts\activate on Windows
-   pip install -e ".[dev]"
-   ```
+2.  **Install dependencies:**
+    ```bash
+    # Using uv
+    uv venv --python 3.11 .venv
+    source .venv/bin/activate  # Windows: .venv\Scripts\activate
+    uv pip install -e ".[dev]"
+    ```
 
-## IDE Configuration
+---
 
-After installation, configure your AI coding IDE to use this MCP server.
+## ⚙️ IDE Configuration
 
-### Claude Code
+Connect your AI coding assistant to the MCP server.
 
-**Option 1: CLI (Recommended)**
-```bash
-# macOS / Linux
-claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
+### Claude Desktop / CLI
 
-# Windows
-claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
-```
+Add to your `claude_desktop_config.json` (or `~/.claude.json`):
 
-**Option 2: Config File**
-
-Add to `~/.claude.json`:
 ```json
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "/absolute/path/to/mcp_creator_growth/.venv/bin/mcp-creator-growth",
+      "args": []
     }
   }
 }
 ```
-
-For Windows:
-```json
-{
-  "mcpServers": {
-    "mcp-creator-growth": {
-      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
-    }
-  }
-}
-```
+*Note: On Windows, use the full path to `mcp-creator-growth.exe` inside `.venv\Scripts\`.*
 
 ### Cursor
 
-Add to Cursor MCP settings (Settings → MCP → Add Server):
-
-```json
-{
-  "mcp-creator-growth": {
-    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
-  }
-}
-```
-
-For Windows:
-```json
-{
-  "mcp-creator-growth": {
-    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
-  }
-}
-```
+1.  Go to **Settings** > **MCP**.
+2.  Click **Add New MCP Server**.
+3.  **Name**: `mcp-creator-growth`
+4.  **Type**: `command`
+5.  **Command**: `/absolute/path/to/mcp_creator_growth/.venv/bin/mcp-creator-growth`
 
 ### Windsurf
 
@@ -144,136 +108,38 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "/absolute/path/to/mcp_creator_growth/.venv/bin/mcp-creator-growth",
+      "args": []
     }
   }
 }
 ```
 
-### Other IDEs
+---
 
-For any MCP-compatible IDE, use these settings:
-- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (or `.venv\Scripts\mcp-creator-growth.exe` on Windows)
-- **Transport:** stdio
+## 🔒 Security & Data
 
-**After configuration, restart your IDE.**
+- **Local First**: All learning history and debugging records are stored firmly on your disk in the `.mcp-sidecar/` directory within your project or user home.
+- **No Telemetry**: This server does not send your code or quiz performance to any cloud server.
+- **Control**: You can delete the `.mcp-sidecar` folder at any time to reset your data.
 
-## Usage
+## 🤝 Contributing
 
-### Available Tools
+We welcome contributions! Please follow these steps:
 
-| Tool | Trigger | For | Returns |
-|------|---------|-----|---------|
-| `learning_session` | User explicit request | **User** | `{status, action}` - minimal |
-| `debug_search` | Automatic (on error) | **Agent** | Compact summaries |
-| `debug_record` | Automatic (after fix) | **Agent** | `{ok, id}` - minimal |
+1.  Fork the repository.
+2.  Create a feature branch: `git checkout -b feature/amazing-feature`.
+3.  Install dev dependencies: `uv pip install -e ".[dev]"`.
+4.  Make your changes and run tests: `pytest dev/tests/`.
+5.  Submit a Pull Request.
 
-### For Users: Learning Session
+## 📄 License
 
-Say to your AI assistant:
-- "Quiz me on this change"
-- "Test my understanding"
-- "Help me learn about what you did"
+This project is licensed under the [MIT License](LICENSE).
 
-The agent will create an interactive learning card and **wait** until you complete it.
+---
 
-> **Note**: Quiz scores are saved locally for your self-tracking but are NOT returned to the agent - this keeps the context clean.
-
-### For Agents: Debug Tools
-
-The debug tools work silently in the background:
-- **Search first**: When encountering errors, agent searches past solutions
-- **Record after**: When fixing errors, agent records the solution
-- **Progressive disclosure**: Returns compact summaries, not full records
-- **Fast lookups**: Uses inverted index for keyword-based searches
-
-## Updating
-
-**macOS / Linux:**
-```bash
-~/mcp-creator-growth/scripts/update.sh
-```
-
-**Windows:**
-```powershell
-~\mcp-creator-growth\scripts\update.ps1
-```
-
-Then restart your IDE.
-
-## Configuration
-
-Create `~/.config/mcp-sidecar/config.toml` (Unix) or `%APPDATA%/mcp-sidecar/config.toml` (Windows):
-
-```toml
-[server]
-host = "127.0.0.1"
-port = 0  # Auto-select
-
-[storage]
-use_global = false  # true = share across projects
-
-[ui]
-theme = "auto"  # auto, dark, light
-language = "en"  # en, zh-CN
-
-[session]
-default_timeout = 600  # 10 minutes
-```
-
-## Data Storage
-
-All data is stored locally in `.mcp-sidecar/`:
-
-```
-.mcp-sidecar/
-├── meta.json              # Project metadata
-├── debug/
-│   ├── index.json         # Optimized index with inverted lookups
-│   └── *.json             # Individual debug records
-├── sessions/
-│   └── *.json             # Learning session history
-└── terms/
-    └── shown.json         # Shown terms tracking
-```
-
-**Storage locations:**
-- **Project-level:** `{project}/.mcp-sidecar/` (tracked with git if you want)
-- **Global:** `~/.config/mcp-sidecar/` (personal, never tracked)
-
-**Index optimization:**
-- Inverted index for keywords, tags, and error types
-- Compact record entries to reduce file size
-- Lazy loading - only fetches full records when needed
-
-## Development
-
-```bash
-# Run tests
-pytest dev/tests/ -v
-
-# Run specific phase
-pytest dev/tests/phase1/ -v
-
-# Run with coverage
-pytest --cov=src/mcp_creator_growth dev/tests/
-```
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Acknowledgments
-
-- Built with [FastMCP](https://github.com/jlowin/fastmcp)
-- Inspired by the need for meaningful AI-assisted learning
+<p align="center">
+  Built with <a href="https://github.com/jlowin/fastmcp">FastMCP</a> • 
+  <a href="https://modelcontextprotocol.io">MCP Standard</a>
+</p>

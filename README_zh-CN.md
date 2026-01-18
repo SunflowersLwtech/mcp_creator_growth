@@ -1,40 +1,44 @@
 # <img src="assets/icon.png" width="48" height="48" align="top" style="margin-right: 10px;"> MCP Creator Growth [访问官网](https://github.com/SunflowersLwtech/mcp_creator_growth)
 
-一个具备上下文感知能力的 AI 编程助手学习侧边栏，通过互动测验和调试经验追踪，帮助开发者**从 AI 生成的代码变更中学习**。
-
 [English](README.md) | [简体中文](README_zh-CN.md) | [繁體中文](README_zh-TW.md)
+
+一个具备上下文感知能力的 **Model Context Protocol (MCP)** 服务器，作为 AI 编程助手的“学习侧边栏”。它通过互动测验帮助开发者**从 AI 生成的代码变更中学习**，并为智能体提供持久化的**项目级调试记忆**。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![MCP Standard](https://img.shields.io/badge/MCP-Standard-green.svg)](https://modelcontextprotocol.io/)
 
-## 设计理念
+## 🚀 为什么使用它？
 
-> **学习是为了用户。调试是为了智能体 (Agent)。**
+1.  **对于开发者（学习）**：不要只接受 AI 的代码——要理解它。当你问“针对这个变更考考我”时，本服务器会创建一个互动学习卡片，验证你对逻辑、安全性或性能影响的理解。
+2.  **对于智能体（记忆）**：不再重复解决同一个 Bug。服务器会在后台静默记录调试解决方案，并在未来遇到类似错误时自动检索它们。
 
-本项目遵循两个核心原则：
+## ✨ 功能特性
 
-| 组件 | 用途 | 受益方 |
-|-----------|---------|-------------|
-| `learning_session` | 帮助用户理解 AI 生成的变更 | **用户** |
-| `debug_search/record` | 构建项目特定的知识库 | **智能体** |
+### 🧠 互动学习会话
+- **工具**: `learning_session`
+- **行为**: 暂停 Agent 并打开本地 Web UI，根据最近的代码变更生成测验。
+- **触发**: 用户显式请求（例如：“教我这个修复”，“考考我”）。
+- **收益**: 确保你在继续之前理解*为什么*要做这个变更。
 
-### 低干扰，高价值
+![WebUI 预览](assets/webui-CN.png)
 
-- **极小的上下文污染**：返回值刻意保持紧凑，以减少 Token 使用
-- **渐进式披露**：调试搜索首先返回摘要，而不是完整记录
-- **倒排索引**：基于关键字的快速查找，无需加载所有记录
-- **本地优先**：所有数据存储在 `.mcp-sidecar/` 中 - 你的数据属于你自己
+### 🐞 调试记忆 (RAG)
+- **工具**: `debug_search`, `debug_record`
+- **行为**:
+    - **搜索**: 当错误发生时，Agent 静默搜索你项目中的过往解决方案。
+    - **记录**: 修复 Bug 后，Agent 记录原因和解决方案。
+- **隐私**: 所有数据均存储在本地 `.mcp-sidecar/` 中。
+- **收益**: 为你的项目构建“群体记忆”，让它随着时间推移变得更聪明。
 
-## 功能特性
+### 📚 术语字典
+- **工具**: `term_get`
+- **行为**: 获取与你当前工作上下文相关的编程术语和概念。
+- **收益**: 帮助你在不离开 IDE 的情况下填补知识空白。
 
-- **阻塞式学习会话** - Agent 会暂停，直到你完成学习卡片
-- **互动测验** - 通过针对性问题验证你的理解
-- **5-Why 溯源** - 理解代码决策背后的“为什么”
-- **调试经验 RAG** - 搜索并记录调试解决方案以供复用
-- **Token 高效** - 返回最少的数据以减少上下文污染
-- **优化的索引** - 用于快速关键字搜索的倒排索引
+---
 
-## 快速开始
+## 🛠️ 快速开始
 
 ### 一键安装
 
@@ -48,93 +52,53 @@ curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth
 irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.ps1 | iex
 ```
 
-安装程序将：
-1. 自动检测你的环境 (uv / conda / 系统 Python)
-2. 如果需要，通过 uv 安装 Python 3.11+
-3. 创建虚拟环境
-4. 安装所有依赖项
-5. 显示你的 IDE 配置命令
-
 ### 手动安装
 
-1. **克隆仓库：**
-   ```bash
-   git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
-   cd mcp_creator_growth
-   ```
+先决条件：`uv` (推荐) 或 Python 3.11+。
 
-2. **创建虚拟环境：**
-   ```bash
-   # 使用 uv (推荐)
-   uv venv --python 3.11 .venv
-   source .venv/bin/activate  # 或在 Windows 上使用 .venv\Scripts\activate
-   uv pip install -e ".[dev]"
+1.  **克隆仓库：**
+    ```bash
+    git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
+    cd mcp_creator_growth
+    ```
 
-   # 或者使用标准 venv
-   python -m venv venv
-   source venv/bin/activate  # 或在 Windows 上使用 venv\Scripts\activate
-   pip install -e ".[dev]"
-   ```
+2.  **安装依赖：**
+    ```bash
+    # 使用 uv
+    uv venv --python 3.11 .venv
+    source .venv/bin/activate  # Windows: .venv\Scripts\activate
+    uv pip install -e ".[dev]"
+    ```
 
-## IDE 配置
+---
 
-安装后，配置你的 AI 编程 IDE 以使用此 MCP 服务器。
+## ⚙️ IDE 配置
 
-### Claude Code
+将你的 AI 编程助手连接到 MCP 服务器。
 
-**选项 1：CLI (推荐)**
-```bash
-# macOS / Linux
-claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
+### Claude Desktop / CLI
 
-# Windows
-claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
-```
+添加到你的 `claude_desktop_config.json` (或 `~/.claude.json`)：
 
-**选项 2：配置文件**
-
-添加到 `~/.claude.json`：
 ```json
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "/absolute/path/to/mcp_creator_growth/.venv/bin/mcp-creator-growth",
+      "args": []
     }
   }
 }
 ```
-
-Windows 用户：
-```json
-{
-  "mcpServers": {
-    "mcp-creator-growth": {
-      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
-    }
-  }
-}
-```
+*注意：在 Windows 上，使用 `.venv\Scripts\` 内 `mcp-creator-growth.exe` 的完整路径。*
 
 ### Cursor
 
-添加到 Cursor MCP 设置 (Settings → MCP → Add Server)：
-
-```json
-{
-  "mcp-creator-growth": {
-    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
-  }
-}
-```
-
-Windows 用户：
-```json
-{
-  "mcp-creator-growth": {
-    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
-  }
-}
-```
+1.  进入 **Settings** > **MCP**。
+2.  点击 **Add New MCP Server**。
+3.  **Name**: `mcp-creator-growth`
+4.  **Type**: `command`
+5.  **Command**: `/absolute/path/to/mcp_creator_growth/.venv/bin/mcp-creator-growth`
 
 ### Windsurf
 
@@ -144,136 +108,38 @@ Windows 用户：
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "/absolute/path/to/mcp_creator_growth/.venv/bin/mcp-creator-growth",
+      "args": []
     }
   }
 }
 ```
 
-### 其他 IDE
+---
 
-对于任何兼容 MCP 的 IDE，使用这些设置：
-- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (或 Windows 上的 `.venv\Scripts\mcp-creator-growth.exe`)
-- **Transport:** stdio
+## 🔒 安全与数据
 
-**配置完成后，重启你的 IDE。**
+- **本地优先**: 所有学习历史和调试记录都牢固地存储在你磁盘上的 `.mcp-sidecar/` 目录中（位于项目或用户主目录下）。
+- **无遥测**: 本服务器不会将你的代码或测验表现发送到任何云服务器。
+- **掌控权**: 你可以随时删除 `.mcp-sidecar` 文件夹来重置你的数据。
 
-## 使用方法
+## 🤝 贡献
 
-### 可用工具
+我们欢迎贡献！请遵循以下步骤：
 
-| 工具 | 触发方式 | 面向对象 | 返回 |
-|------|---------|-----|---------|
-| `learning_session` | 用户显式请求 | **用户** | `{status, action}` - 极简 |
-| `debug_search` | 自动 (出错时) | **智能体** | 紧凑摘要 |
-| `debug_record` | 自动 (修复后) | **智能体** | `{ok, id}` - 极简 |
+1.  Fork 本仓库。
+2.  创建特性分支：`git checkout -b feature/amazing-feature`。
+3.  安装开发依赖：`uv pip install -e ".[dev]"`。
+4.  进行更改并运行测试：`pytest dev/tests/`。
+5.  提交 Pull Request。
 
-### 对于用户：学习会话
+## 📄 许可证
 
-对你的 AI 助手说：
-- "Quiz me on this change" (针对这个变更考考我)
-- "Test my understanding" (测试我的理解)
-- "Help me learn about what you did" (帮我学习你做了什么)
+本项目基于 [MIT License](LICENSE) 授权。
 
-Agent 将创建一个互动学习卡片并**等待**直到你完成它。
+---
 
-> **注意**：测验分数保存在本地供你自我追踪，**不会**返回给 Agent - 以保持上下文干净。
-
-### 对于 Agent：调试工具
-
-调试工具在后台静默工作：
-- **先搜索**：遇到错误时，Agent 搜索过去的解决方案
-- **后记录**：修复错误时，Agent 记录解决方案
-- **渐进式披露**：返回紧凑的摘要，而不是完整记录
-- **快速查找**：使用倒排索引进行基于关键字的搜索
-
-## 更新
-
-**macOS / Linux:**
-```bash
-~/mcp-creator-growth/scripts/update.sh
-```
-
-**Windows:**
-```powershell
-~\mcp-creator-growth\scripts\update.ps1
-```
-
-然后重启你的 IDE。
-
-## 配置
-
-创建 `~/.config/mcp-sidecar/config.toml` (Unix) 或 `%APPDATA%/mcp-sidecar/config.toml` (Windows)：
-
-```toml
-[server]
-host = "127.0.0.1"
-port = 0  # 自动选择
-
-[storage]
-use_global = false  # true = 跨项目共享
-
-[ui]
-theme = "auto"  # auto, dark, light
-language = "en"  # en, zh-CN
-
-[session]
-default_timeout = 600  # 10 分钟
-```
-
-## 数据存储
-
-所有数据都存储在本地的 `.mcp-sidecar/` 目录中：
-
-```
-.mcp-sidecar/
-├── meta.json              # 项目元数据
-├── debug/
-│   ├── index.json         # 带倒排查找的优化索引
-│   └── *.json             # 单个调试记录
-├── sessions/
-│   └── *.json             # 学习会话历史
-└── terms/
-    └── shown.json         # 已展示术语追踪
-```
-
-**存储位置：**
-- **项目级：** `{project}/.mcp-sidecar/` (如果需要可以用 git 追踪)
-- **全局级：** `~/.config/mcp-sidecar/` (个人数据，永不追踪)
-
-**索引优化：**
-- 针对关键字、标签和错误类型的倒排索引
-- 紧凑的记录条目以减小文件大小
-- 懒加载 - 仅在需要时获取完整记录
-
-## 开发
-
-```bash
-# 运行测试
-pytest dev/tests/ -v
-
-# 运行特定阶段
-pytest dev/tests/phase1/ -v
-
-# 运行带覆盖率的测试
-pytest --cov=src/mcp_creator_growth dev/tests/
-```
-
-## 贡献
-
-欢迎贡献！请：
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交你的变更 (`git commit -m 'Add amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 开启 Pull Request
-
-## 许可证
-
-MIT License - 详情见 [LICENSE](LICENSE)。
-
-## 致谢
-
-- 基于 [FastMCP](https://github.com/jlowin/fastmcp) 构建
-- 灵感来自于对有意义的 AI 辅助学习的需求
+<p align="center">
+  基于 <a href="https://github.com/jlowin/fastmcp">FastMCP</a> 构建 • 
+  <a href="https://modelcontextprotocol.io">MCP 标准</a>
+</p>

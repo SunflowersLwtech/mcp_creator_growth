@@ -1418,3 +1418,199 @@ svg {
     font-size: 14px;
     color: hsl(var(--muted-foreground));
 }
+
+/* ==================== Terms Section ==================== */
+.terms-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.term-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.term-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--chart-4)) 100%);
+    opacity: 0.8;
+}
+
+.term-card:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.1);
+}
+
+.dark .term-card:hover {
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.3);
+}
+
+.term-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.term-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.term-name-cn {
+    font-size: 13px;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+}
+
+.term-domain {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+}
+
+.term-definition {
+    font-size: 13px;
+    line-height: 1.6;
+    color: hsl(var(--muted-foreground));
+    margin-top: 8px;
+}
+
+.term-definition-cn {
+    font-size: 12px;
+    line-height: 1.5;
+    color: hsl(var(--muted-foreground) / 0.8);
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed hsl(var(--border));
+}
+
+/* Terms section title with count badge */
+.terms-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.terms-count {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: hsl(var(--chart-4) / 0.2);
+    color: hsl(var(--chart-4));
+}
+
+/* Domain-specific colors */
+.term-card[data-domain="programming_basics"] .term-domain {
+    background: hsl(var(--chart-1) / 0.15);
+    color: hsl(var(--chart-1));
+}
+
+.term-card[data-domain="data_structures"] .term-domain {
+    background: hsl(var(--chart-2) / 0.15);
+    color: hsl(var(--chart-2));
+}
+
+.term-card[data-domain="algorithms"] .term-domain {
+    background: hsl(var(--chart-3) / 0.15);
+    color: hsl(var(--chart-3));
+}
+
+.term-card[data-domain="software_design"] .term-domain {
+    background: hsl(var(--chart-4) / 0.15);
+    color: hsl(var(--chart-4));
+}
+
+.term-card[data-domain="web_development"] .term-domain {
+    background: hsl(var(--chart-5) / 0.15);
+    color: hsl(var(--chart-5));
+}
+
+.term-card[data-domain="version_control"] .term-domain {
+    background: hsl(142 70% 45% / 0.15);
+    color: hsl(142 70% 45%);
+}
+
+.term-card[data-domain="testing"] .term-domain {
+    background: hsl(38 92% 50% / 0.15);
+    color: hsl(38 92% 50%);
+}
+
+.term-card[data-domain="security"] .term-domain {
+    background: hsl(0 72% 50% / 0.15);
+    color: hsl(0 72% 50%);
+}
+
+.term-card[data-domain="databases"] .term-domain {
+    background: hsl(262 83% 58% / 0.15);
+    color: hsl(262 83% 58%);
+}
+
+.term-card[data-domain="devops"] .term-domain {
+    background: hsl(200 98% 40% / 0.15);
+    color: hsl(200 98% 40%);
+}
+
+/* Animation for terms appearing */
+.term-card {
+    animation: termFadeIn 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.term-card:nth-child(1) { animation-delay: 0.1s; }
+.term-card:nth-child(2) { animation-delay: 0.2s; }
+.term-card:nth-child(3) { animation-delay: 0.3s; }
+.term-card:nth-child(4) { animation-delay: 0.4s; }
+.term-card:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes termFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive for terms */
+@media (max-width: 768px) {
+    .terms-container {
+        grid-template-columns: 1fr;
+    }
+
+    .term-card {
+        padding: 12px;
+    }
+
+    .term-name {
+        font-size: 14px;
+    }
+
+    .term-definition {
+        font-size: 12px;
+    }
+}

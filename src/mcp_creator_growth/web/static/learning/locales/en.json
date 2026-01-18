@@ -18,6 +18,10 @@
         "loading": "Loading session data...",
         "noData": "No session data available"
     },
+    "terms": {
+        "title": "Key Terms",
+        "noData": "No terms available"
+    },
     "reasoning": {
         "title": "Reasoning Insights (5-Why)",
         "goal": "Goal",

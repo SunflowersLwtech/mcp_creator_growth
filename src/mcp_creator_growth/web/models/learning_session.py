@@ -49,6 +49,7 @@ class LearningSession:
         reasoning: dict[str, Any] | None = None,
         quizzes: list[dict[str, Any]] | None = None,
         focus_areas: list[str] | None = None,
+        terms: list[dict[str, Any]] | None = None,
         on_complete_callback: "Callable[[LearningSession], None] | None" = None,
     ):
         """
@@ -61,6 +62,7 @@ class LearningSession:
             reasoning: 5-Why reasoning structure (goal, trigger, mechanism, alternatives, risks)
             quizzes: List of quiz questions
             focus_areas: Learning focus areas
+            terms: Programming terms to display (1-5 terms, auto-fetched if None)
             on_complete_callback: Optional callback to invoke on session completion (for persistence)
         """
         self.session_id = session_id
@@ -69,6 +71,7 @@ class LearningSession:
         self.reasoning = reasoning or self._generate_default_reasoning(summary)
         self.quizzes = quizzes or []
         self.focus_areas = focus_areas or ["logic"]
+        self.terms = terms or []
 
         # Status tracking
         self.status = LearningStatus.WAITING
@@ -200,6 +203,7 @@ class LearningSession:
             "reasoning": self.reasoning,
             "quizzes": self.quizzes,
             "focus_areas": self.focus_areas,
+            "terms": self.terms,
             "status": self.status.value,
             "created_at": self.created_at,
         }

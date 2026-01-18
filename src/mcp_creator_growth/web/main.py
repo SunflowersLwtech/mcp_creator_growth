@@ -238,6 +238,7 @@ class WebUIManager:
         reasoning: dict[str, Any] | None = None,
         quizzes: list[dict[str, Any]] | None = None,
         focus_areas: list[str] | None = None,
+        terms: list[dict[str, Any]] | None = None,
     ) -> LearningSession:
         """
         Create a new learning session.
@@ -248,12 +249,13 @@ class WebUIManager:
             reasoning: 5-Why reasoning structure
             quizzes: Quiz questions
             focus_areas: Learning focus areas
+            terms: Programming terms to display (auto-fetched if None)
 
         Returns:
             The created LearningSession
         """
         session_id = f"{int(time.time())}_{uuid.uuid4().hex[:8]}"
-        
+
         # Get or create session storage for this project
         config = get_config()
         storage = None
@@ -264,7 +266,17 @@ class WebUIManager:
                 except Exception as e:
                     debug_log(f"Failed to init session storage: {e}")
             storage = self._session_storage.get(project_directory)
-        
+
+        # Auto-fetch terms if not provided
+        if terms is None:
+            try:
+                from ..storage import get_session_terms
+                terms = get_session_terms(project_directory, count=3, auto_mark=True)
+                debug_log(f"Auto-fetched {len(terms)} terms for session")
+            except Exception as e:
+                debug_log(f"Failed to auto-fetch terms: {e}")
+                terms = []
+
         # Create persistence callback
         def on_session_complete(session: LearningSession) -> None:
             if storage and config.session.auto_save:
@@ -286,6 +298,7 @@ class WebUIManager:
             reasoning=reasoning,
             quizzes=quizzes,
             focus_areas=focus_areas,
+            terms=terms,
             on_complete_callback=on_session_complete if storage else None,
         )
 
@@ -362,6 +375,7 @@ async def launch_learning_session_ui(
     reasoning: dict[str, Any] | None = None,
     quizzes: list[dict[str, Any]] | None = None,
     focus_areas: list[str] | None = None,
+    terms: list[dict[str, Any]] | None = None,
     timeout: int = 600,
 ) -> dict[str, Any]:
     """
@@ -377,6 +391,7 @@ async def launch_learning_session_ui(
         reasoning: 5-Why reasoning structure
         quizzes: Quiz questions
         focus_areas: Learning focus areas
+        terms: Programming terms to display (auto-fetched if None)
         timeout: Timeout in seconds
 
     Returns:
@@ -391,6 +406,7 @@ async def launch_learning_session_ui(
         reasoning=reasoning,
         quizzes=quizzes,
         focus_areas=focus_areas,
+        terms=terms,
     )
 
     # Start server if not running

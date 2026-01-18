@@ -577,6 +577,86 @@ async def debug_record(
 
 
 @mcp.tool()
+async def term_get(
+    project_directory: Annotated[str, Field(
+        description="Project directory path"
+    )] = ".",
+    count: Annotated[int, Field(
+        description="Number of terms to get (1-5)",
+        ge=1,
+        le=5
+    )] = 3,
+    domain: Annotated[str | None, Field(
+        description="Optional domain filter (e.g., 'programming_basics', 'algorithms', 'web_development')"
+    )] = None,
+) -> dict[str, Any]:
+    """Get programming terms for learning.
+
+    Returns terms that haven't been shown to the user yet.
+    Terms are automatically tracked per project to avoid repetition.
+
+    Available domains:
+    - programming_basics: Variables, functions, classes, etc.
+    - data_structures: Arrays, lists, trees, graphs, etc.
+    - algorithms: Time complexity, recursion, sorting, etc.
+    - software_design: API, abstraction, design patterns, etc.
+    - web_development: HTTP, REST, DOM, etc.
+    - version_control: Git, branches, commits, etc.
+    - testing: Unit tests, TDD, mocking, etc.
+    - security: Encryption, XSS, authentication, etc.
+    - databases: SQL, NoSQL, transactions, etc.
+    - devops: Docker, Kubernetes, CI/CD, etc.
+
+    Args:
+        project_directory: Project directory for tracking shown terms
+        count: Number of terms to return (1-5)
+        domain: Optional domain to filter terms
+
+    Returns:
+        dict: {"terms": [...], "count": N, "remaining": N}
+    """
+    debug_log(f"term_get called: project={project_directory}, count={count}, domain={domain}")
+
+    # Ensure project directory exists
+    if not os.path.exists(project_directory):
+        project_directory = os.getcwd()
+    project_directory = os.path.abspath(project_directory)
+
+    try:
+        from .storage import TermsIndexManager
+
+        manager = TermsIndexManager(project_directory)
+        terms = manager.get_unshown_terms(count=count, domain=domain)
+
+        if terms:
+            # Mark as shown
+            manager.mark_as_shown([t["id"] for t in terms])
+
+            return {
+                "terms": terms,
+                "count": len(terms),
+                "remaining": manager.get_remaining_count(),
+                "message": f"Retrieved {len(terms)} new terms",
+            }
+        else:
+            return {
+                "terms": [],
+                "count": 0,
+                "remaining": 0,
+                "message": "No new terms available. All terms have been shown.",
+            }
+
+    except Exception as e:
+        debug_log(f"term_get error: {e}")
+        return {
+            "terms": [],
+            "count": 0,
+            "remaining": 0,
+            "message": f"Error: {str(e)}",
+        }
+
+
+@mcp.tool()
 def get_system_info() -> str:
     """
     Get system environment information.

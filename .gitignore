@@ -61,6 +61,7 @@ dmypy.json
 
 # OS files
 .DS_Store
+._*
 Thumbs.db
 Desktop.ini
 

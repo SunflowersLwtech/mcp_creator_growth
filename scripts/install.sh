@@ -14,7 +14,7 @@ echo ""
 # Check Python version
 echo "[1/5] Checking Python version..."
 if command -v python3 &> /dev/null; then
-    PYTHON_VERSION=$(python3 --version 2>&1 | grep -oP '\d+\.\d+')
+    PYTHON_VERSION=$(python3 --version 2>&1 | sed -n 's/Python \([0-9]*\.[0-9]*\).*/\1/p')
     MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
     MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
 

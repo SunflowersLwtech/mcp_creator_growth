@@ -15,7 +15,7 @@ echo ""
 cd "$INSTALL_PATH"
 
 # Get current version
-CURRENT_VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/mcp_creator_growth/__init__.py 2>/dev/null || echo "unknown")
+CURRENT_VERSION=$(sed -n 's/^__version__[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' src/mcp_creator_growth/__init__.py 2>/dev/null || echo "unknown")
 echo "Current version: $CURRENT_VERSION"
 echo ""
 
@@ -40,7 +40,7 @@ echo "[2/3] Updating dependencies..."
 echo "  Dependencies updated."
 
 # Get new version
-NEW_VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/mcp_creator_growth/__init__.py 2>/dev/null || echo "unknown")
+NEW_VERSION=$(sed -n 's/^__version__[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' src/mcp_creator_growth/__init__.py 2>/dev/null || echo "unknown")
 
 echo ""
 echo "[3/3] Checking version..."

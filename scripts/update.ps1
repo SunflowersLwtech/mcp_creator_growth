@@ -14,6 +14,28 @@ Write-Host ""
 
 Push-Location $InstallPath
 
+# Read environment manager from saved file
+if (Test-Path ".env_manager") {
+    $EnvManager = Get-Content ".env_manager" -Raw
+    $EnvManager = $EnvManager.Trim()
+} else {
+    # Fallback: detect from existing environment
+    if (Test-Path ".venv") {
+        $EnvManager = "uv"
+    } elseif ((conda env list 2>$null | Select-String "mcp-creator-growth")) {
+        $EnvManager = "conda"
+    } elseif (Test-Path "venv") {
+        $EnvManager = "venv"
+    } else {
+        Write-Host "Error: Cannot detect environment manager." -ForegroundColor Red
+        Write-Host "Please run install.ps1 again." -ForegroundColor Yellow
+        Pop-Location
+        exit 1
+    }
+}
+
+Write-Host "Environment: $EnvManager" -ForegroundColor Cyan
+
 # Get current version
 $currentVersion = "unknown"
 try {
@@ -44,7 +66,21 @@ Write-Host "  Changes pulled." -ForegroundColor Green
 # Update dependencies
 Write-Host ""
 Write-Host "[2/3] Updating dependencies..." -ForegroundColor Yellow
-& ".\venv\Scripts\pip.exe" install -e ".[dev]" --quiet --upgrade
+
+switch ($EnvManager) {
+    "uv" {
+        uv pip install -e ".[dev]" --quiet --upgrade
+    }
+    "conda" {
+        conda activate mcp-creator-growth
+        pip install -e ".[dev]" --quiet --upgrade
+        conda deactivate
+    }
+    "venv" {
+        & ".\venv\Scripts\pip.exe" install -e ".[dev]" --quiet --upgrade
+    }
+}
+
 Write-Host "  Dependencies updated." -ForegroundColor Green
 
 # Get new version

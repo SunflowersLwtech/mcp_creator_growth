@@ -14,6 +14,26 @@ echo ""
 
 cd "$INSTALL_PATH"
 
+# Read environment manager from saved file
+if [ -f ".env_manager" ]; then
+    ENV_MANAGER=$(cat .env_manager)
+else
+    # Fallback: detect from existing environment
+    if [ -d ".venv" ]; then
+        ENV_MANAGER="uv"
+    elif conda env list 2>/dev/null | grep -q "mcp-creator-growth"; then
+        ENV_MANAGER="conda"
+    elif [ -d "venv" ]; then
+        ENV_MANAGER="venv"
+    else
+        echo "Error: Cannot detect environment manager."
+        echo "Please run install.sh again."
+        exit 1
+    fi
+fi
+
+echo "Environment: $ENV_MANAGER"
+
 # Get current version
 CURRENT_VERSION=$(sed -n 's/^__version__[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' src/mcp_creator_growth/__init__.py 2>/dev/null || echo "unknown")
 echo "Current version: $CURRENT_VERSION"
@@ -36,7 +56,22 @@ echo "  Changes pulled."
 # Update dependencies
 echo ""
 echo "[2/3] Updating dependencies..."
-./venv/bin/pip install -e ".[dev]" --quiet --upgrade
+
+case "$ENV_MANAGER" in
+    "uv")
+        uv pip install -e ".[dev]" --quiet --upgrade
+        ;;
+    "conda")
+        eval "$(conda shell.bash hook)"
+        conda activate mcp-creator-growth
+        pip install -e ".[dev]" --quiet --upgrade
+        conda deactivate
+        ;;
+    "venv")
+        ./venv/bin/pip install -e ".[dev]" --quiet --upgrade
+        ;;
+esac
+
 echo "  Dependencies updated."
 
 # Get new version

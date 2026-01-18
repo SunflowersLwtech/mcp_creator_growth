@@ -1,75 +1,180 @@
 # MCP Creator Growth - Windows Installation Script
-# Usage: .\scripts\install.ps1
+# Usage: irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.ps1 | iex
+# Or: .\scripts\install.ps1
+#
+# Parameters:
+#   -InstallPath     - Custom installation path (default: ~/mcp-creator-growth)
+#   -UseUV           - Force use uv
+#   -UseConda        - Force use conda
+#   -SkipClaudeConfig - Skip Claude Code configuration output
 
 param(
     [string]$InstallPath = "$env:USERPROFILE\mcp-creator-growth",
+    [switch]$UseUV,
+    [switch]$UseConda,
     [switch]$SkipClaudeConfig
 )
 
 $ErrorActionPreference = "Stop"
+$PythonVersionRequired = "3.11"
+$EnvManager = ""
+$PythonPath = ""
 
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host "  MCP Creator Growth - Installation Script" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Check Python version
-Write-Host "[1/5] Checking Python version..." -ForegroundColor Yellow
-try {
-    $pythonVersion = python --version 2>&1
-    if ($pythonVersion -match "Python (\d+)\.(\d+)") {
-        $major = [int]$Matches[1]
-        $minor = [int]$Matches[2]
-        if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 11)) {
-            Write-Host "Error: Python 3.11+ is required. Found: $pythonVersion" -ForegroundColor Red
-            exit 1
+# Function to check Python version
+function Test-PythonVersion {
+    param([string]$PythonCmd)
+    try {
+        $version = & $PythonCmd --version 2>&1
+        if ($version -match "Python (\d+)\.(\d+)") {
+            $major = [int]$Matches[1]
+            $minor = [int]$Matches[2]
+            if ($major -ge 3 -and $minor -ge 11) {
+                return "$major.$minor"
+            }
         }
-        Write-Host "  Found: $pythonVersion" -ForegroundColor Green
-    }
-} catch {
-    Write-Host "Error: Python not found. Please install Python 3.11+" -ForegroundColor Red
-    exit 1
+    } catch {}
+    return $null
 }
 
-# Clone or update repository
+# Function to install uv
+function Install-UV {
+    Write-Host "  Installing uv..." -ForegroundColor Yellow
+    irm https://astral.sh/uv/install.ps1 | iex
+    $env:Path = "$env:USERPROFILE\.local\bin;$env:Path"
+}
+
+# Step 1: Detect or install environment manager
+Write-Host "[1/5] Setting up Python environment..." -ForegroundColor Yellow
+
+if ($UseUV) {
+    $EnvManager = "uv"
+    if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
+        Install-UV
+    }
+} elseif ($UseConda) {
+    $EnvManager = "conda"
+    if (-not (Get-Command conda -ErrorAction SilentlyContinue)) {
+        Write-Host "Error: -UseConda specified but conda is not installed." -ForegroundColor Red
+        Write-Host "Please install Miniconda: https://docs.conda.io/en/latest/miniconda.html" -ForegroundColor Yellow
+        exit 1
+    }
+} else {
+    # Auto-detect: prefer uv > conda > system python
+    if (Get-Command uv -ErrorAction SilentlyContinue) {
+        $EnvManager = "uv"
+        Write-Host "  Detected: uv" -ForegroundColor Green
+    } elseif (Get-Command conda -ErrorAction SilentlyContinue) {
+        $EnvManager = "conda"
+        Write-Host "  Detected: conda" -ForegroundColor Green
+    } elseif (Get-Command python -ErrorAction SilentlyContinue) {
+        $version = Test-PythonVersion "python"
+        if ($version) {
+            $EnvManager = "venv"
+            Write-Host "  Detected: Python $version (using venv)" -ForegroundColor Green
+        } else {
+            Write-Host "  System Python is too old. Installing uv..." -ForegroundColor Yellow
+            Install-UV
+            $EnvManager = "uv"
+        }
+    } else {
+        Write-Host "  No Python found. Installing uv..." -ForegroundColor Yellow
+        Install-UV
+        $EnvManager = "uv"
+    }
+}
+
+Write-Host "  Using: $EnvManager" -ForegroundColor Cyan
+
+# Step 2: Clone or update repository
 Write-Host ""
 Write-Host "[2/5] Setting up repository..." -ForegroundColor Yellow
 if (Test-Path $InstallPath) {
     Write-Host "  Directory exists. Updating..." -ForegroundColor Gray
     Push-Location $InstallPath
-    git pull origin main
+    git pull origin main 2>$null
     Pop-Location
 } else {
     Write-Host "  Cloning repository..." -ForegroundColor Gray
     git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git $InstallPath
 }
 
-# Create virtual environment
+Push-Location $InstallPath
+
+# Step 3: Create virtual environment
 Write-Host ""
 Write-Host "[3/5] Creating virtual environment..." -ForegroundColor Yellow
-Push-Location $InstallPath
-if (-not (Test-Path "venv")) {
-    python -m venv venv
-    Write-Host "  Virtual environment created." -ForegroundColor Green
-} else {
-    Write-Host "  Virtual environment already exists." -ForegroundColor Gray
+
+switch ($EnvManager) {
+    "uv" {
+        if (-not (Test-Path ".venv")) {
+            uv venv --python $PythonVersionRequired .venv
+            Write-Host "  Virtual environment created with Python $PythonVersionRequired" -ForegroundColor Green
+        } else {
+            Write-Host "  Virtual environment already exists." -ForegroundColor Gray
+        }
+        $PythonPath = "$InstallPath\.venv\Scripts\python.exe"
+    }
+    "conda" {
+        $envExists = conda env list | Select-String "mcp-creator-growth"
+        if (-not $envExists) {
+            conda create -n mcp-creator-growth python=$PythonVersionRequired -y
+            Write-Host "  Conda environment created." -ForegroundColor Green
+        } else {
+            Write-Host "  Conda environment already exists." -ForegroundColor Gray
+        }
+        # Get conda env path
+        $condaInfo = conda env list | Select-String "mcp-creator-growth"
+        $CondaEnvPath = ($condaInfo -split '\s+')[-1]
+        $PythonPath = "$CondaEnvPath\python.exe"
+    }
+    "venv" {
+        if (-not (Test-Path "venv")) {
+            python -m venv venv
+            Write-Host "  Virtual environment created." -ForegroundColor Green
+        } else {
+            Write-Host "  Virtual environment already exists." -ForegroundColor Gray
+        }
+        $PythonPath = "$InstallPath\venv\Scripts\python.exe"
+    }
 }
 
-# Install dependencies
+# Step 4: Install dependencies
 Write-Host ""
 Write-Host "[4/5] Installing dependencies..." -ForegroundColor Yellow
-& ".\venv\Scripts\pip.exe" install -e ".[dev]" --quiet
+
+switch ($EnvManager) {
+    "uv" {
+        uv pip install -e ".[dev]" --quiet
+    }
+    "conda" {
+        conda activate mcp-creator-growth
+        pip install -e ".[dev]" --quiet
+        conda deactivate
+    }
+    "venv" {
+        & ".\venv\Scripts\pip.exe" install -e ".[dev]" --quiet
+    }
+}
+
 Write-Host "  Dependencies installed." -ForegroundColor Green
 
-# Configure Claude Code
+# Step 5: Configure Claude Code
 Write-Host ""
 Write-Host "[5/5] Configuring Claude Code..." -ForegroundColor Yellow
+
+# Save environment manager info for update script
+$EnvManager | Out-File -FilePath "$InstallPath\.env_manager" -Encoding UTF8 -NoNewline
 
 if (-not $SkipClaudeConfig) {
     $mcpConfig = @{
         mcpServers = @{
             "mcp-creator-growth" = @{
-                command = "$InstallPath\venv\Scripts\python.exe"
+                command = $PythonPath
                 args = @("-m", "mcp_creator_growth")
                 env = @{
                     MCP_DEBUG = "false"
@@ -99,6 +204,9 @@ Write-Host "================================================" -ForegroundColor G
 Write-Host "  Installation Complete!" -ForegroundColor Green
 Write-Host "================================================" -ForegroundColor Green
 Write-Host ""
+Write-Host "Environment: $EnvManager" -ForegroundColor Cyan
+Write-Host "Python path: $PythonPath" -ForegroundColor Cyan
+Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Open Claude Code" -ForegroundColor White
 Write-Host "  2. Go to Settings > MCP Servers" -ForegroundColor White
@@ -106,5 +214,5 @@ Write-Host "  3. Add the configuration shown above" -ForegroundColor White
 Write-Host "  4. Restart Claude Code" -ForegroundColor White
 Write-Host ""
 Write-Host "To update later, run:" -ForegroundColor Yellow
-Write-Host "  .\scripts\update.ps1" -ForegroundColor White
+Write-Host "  $InstallPath\scripts\update.ps1" -ForegroundColor White
 Write-Host ""

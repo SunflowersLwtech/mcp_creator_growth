@@ -32,50 +32,40 @@ SERVER_NAME = "MCP Creator Growth"
 SERVER_INSTRUCTIONS = """
 MCP Creator Growth - Learning & Debug Assistant
 
-TOOLS OVERVIEW:
+DESIGN PHILOSOPHY:
+• learning_session: FOR THE USER - helps users learn from AI-generated changes
+• debug_search/record: FOR THE AGENT - builds agent's project-specific knowledge
+
+TOOLS:
 • learning_session: Interactive learning card (BLOCKS until user completes)
 • debug_search: Search historical debug experiences (silent, no UI)
 • debug_record: Record new debug solutions (silent, background)
-• get_system_info: Get system environment details
 
 CRITICAL RULES:
 
-1. LEARNING SESSION GATEKEEPER
+1. LEARNING SESSION (User-Centric)
    ✓ ONLY call when user explicitly says: "quiz me", "test me", "help me learn"
    ✗ NEVER auto-call after task completion
    ✗ NEVER call when user just asks "what changed?" (answer directly instead)
+   → Returns minimal context to reduce token usage
 
 2. SILENCE PROTOCOL
    When learning_session returns with "action": "HALT_GENERATION":
    → STOP generating immediately
    → Output NOTHING more (the UI already shows everything)
-   → Saves tokens and prevents confusion
 
-3. DEBUG TOOLS - PROACTIVE & SILENT
-   These tools should be used AUTOMATICALLY without user prompts:
+3. DEBUG TOOLS (Agent-Centric, Proactive & Silent)
+   These tools build YOUR knowledge base - use them AUTOMATICALLY:
 
-   ▶ debug_search - AUTO-TRIGGER CONDITIONS:
-     • When you encounter ANY error, exception, or failure
-     • When build/test/lint commands fail
-     • When you see error messages in command output
-     • BEFORE attempting to fix: search first to find historical solutions
+   ▶ debug_search - AUTO-TRIGGER when encountering errors
+     → Returns compact summaries to minimize context pollution
      → Call silently, integrate results into your fix strategy
 
-   ▶ debug_record - AUTO-TRIGGER CONDITIONS:
-     • AFTER successfully fixing ANY bug or error
-     • AFTER resolving build/test/lint failures
-     • When a previously failing operation now succeeds
+   ▶ debug_record - AUTO-TRIGGER after fixing errors
+     → Returns only success/failure, no verbose data
      → Call silently in background, never announce to user
 
-   WORKFLOW EXAMPLE:
-   1. User asks to fix a bug → You encounter TypeError
-   2. AUTO: Call debug_search("TypeError ...") silently
-   3. Use historical solutions (if found) to inform your fix
-   4. Fix the bug successfully
-   5. AUTO: Call debug_record(context, cause, solution) silently
-   6. Continue with user's task
-
-DATA PRIVACY: All data stored locally in project's .mcp-sidecar/ directory.
+DATA: All data stored locally in .mcp-sidecar/ directory.
 """
 
 # Initialize MCP server with instructions
@@ -334,7 +324,8 @@ async def learning_session(
         timeout: Timeout in seconds for waiting user to complete learning
 
     Returns:
-        dict: {"status": "completed", "quiz_score": score, "time_spent": seconds}
+        dict: {"status": "completed", "action": "HALT_GENERATION"}
+        Note: Quiz scores are NOT returned to reduce context. Scores are saved locally for user self-tracking.
     """
     debug_log(f"learning_session called: project={project_directory}, timeout={timeout}")
 
@@ -371,12 +362,11 @@ async def learning_session(
         debug_log(f"Learning session completed: {result}")
 
         # Return minimal result to signal Agent to stop
+        # NOTE: We intentionally do NOT return quiz_score to reduce context pollution
+        # The score is saved locally for user's self-tracking, not for agent consumption
         return {
             "status": "completed",
-            "quiz_score": result.get("score", 0),
-            "time_spent": result.get("duration", 0),
             "action": "HALT_GENERATION",
-            "message": "User completed learning. Do not repeat or summarize.",
         }
 
     except TimeoutError as e:
@@ -436,7 +426,8 @@ async def debug_search(
         limit: Maximum number of results
 
     Returns:
-        dict: {"results": [...], "count": N, "message": "..."}
+        dict: {"results": [compact_summaries], "count": N}
+        Note: Returns compact summaries (truncated cause/solution) to minimize context pollution.
     """
     debug_log(f"debug_search called: query='{query[:50]}...', project={project_directory}")
 
@@ -462,17 +453,27 @@ async def debug_search(
 
         if results:
             debug_log(f"Found {len(results)} matching records")
+            # Progressive disclosure: return compact summaries, not full records
+            # This reduces context pollution while still providing useful information
+            compact_results = []
+            for r in results:
+                compact_results.append({
+                    "id": r.get("id"),
+                    "error_type": r.get("context", {}).get("error_type", "Unknown"),
+                    "cause_summary": r.get("cause", "")[:100] + ("..." if len(r.get("cause", "")) > 100 else ""),
+                    "solution_summary": r.get("solution", "")[:150] + ("..." if len(r.get("solution", "")) > 150 else ""),
+                    "tags": r.get("tags", [])[:5],  # Limit tags
+                })
             return {
-                "results": results,
+                "results": compact_results,
                 "count": len(results),
-                "message": f"Found {len(results)} relevant debug experiences",
+                "hint": "Use record IDs to retrieve full details if needed",
             }
         else:
             debug_log("No matching records found")
             return {
                 "results": [],
                 "count": 0,
-                "message": "No matching debug experiences found",
             }
 
     except Exception as e:
@@ -480,7 +481,6 @@ async def debug_search(
         return {
             "results": [],
             "count": 0,
-            "message": f"Search error: {str(e)}",
         }
 
 
@@ -523,7 +523,7 @@ async def debug_record(
         tags: Optional tags for categorization
 
     Returns:
-        dict: {"success": bool, "record_id": str, "message": str}
+        dict: {"ok": bool, "id": str} - Minimal return to reduce context pollution.
     """
     debug_log(f"debug_record called: context={context}, project={project_directory}")
 
@@ -541,9 +541,8 @@ async def debug_record(
         # Validate context
         if not isinstance(context, dict):
             return {
-                "success": False,
-                "record_id": None,
-                "message": "context must be a dictionary",
+                "ok": False,
+                "error": "context must be a dictionary",
             }
 
         # Ensure context has required fields
@@ -561,18 +560,17 @@ async def debug_record(
         )
 
         debug_log(f"Debug experience recorded: {record_id}")
+        # Minimal return to reduce context pollution
         return {
-            "success": True,
-            "record_id": record_id,
-            "message": f"Recorded debug experience: {record_id}",
+            "ok": True,
+            "id": record_id,
         }
 
     except Exception as e:
         debug_log(f"debug_record error: {e}")
         return {
-            "success": False,
-            "record_id": None,
-            "message": f"Recording error: {str(e)}",
+            "ok": False,
+            "error": str(e)[:100],  # Truncate error message
         }
 
 

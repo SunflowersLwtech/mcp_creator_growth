@@ -45,19 +45,34 @@ class DebugIndexManager:
         self._index = self._load_index()
 
     def _load_index(self) -> dict[str, Any]:
-        """Load the index from file or create a new one."""
+        """Load the index from file or create a new one.
+
+        Index structure (optimized for search):
+        - records: List of compact record metadata
+        - tags: Inverted index for tag-based lookup
+        - keywords: Inverted index for keyword-based lookup (new)
+        - error_types: Inverted index for error type lookup (new)
+        """
         if self.index_file.exists():
             try:
                 with open(self.index_file, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    index = json.load(f)
+                    # Migrate old index if needed
+                    if "keywords" not in index:
+                        index["keywords"] = {}
+                    if "error_types" not in index:
+                        index["error_types"] = {}
+                    return index
             except (json.JSONDecodeError, IOError) as e:
                 debug_log(f"Error loading index: {e}, creating new index")
 
         return {
-            "version": 1,
+            "version": 2,
             "created_at": datetime.now().isoformat(),
             "records": [],
             "tags": {},
+            "keywords": {},      # Inverted index: keyword -> [record_ids]
+            "error_types": {},   # Inverted index: error_type -> [record_ids]
         }
 
     def _save_index(self) -> None:
@@ -65,6 +80,23 @@ class DebugIndexManager:
         self._index["updated_at"] = datetime.now().isoformat()
         with open(self.index_file, "w", encoding="utf-8") as f:
             json.dump(self._index, f, ensure_ascii=False, indent=2)
+
+    def _extract_keywords(self, text: str) -> list[str]:
+        """Extract searchable keywords from text.
+
+        Only extracts meaningful keywords (length > 3) for the inverted index.
+        This enables fast keyword-based lookups without full-text search.
+        """
+        import re
+        # Split on non-alphanumeric, filter short/common words
+        words = re.split(r'[^a-zA-Z0-9_]+', text.lower())
+        stop_words = {
+            "a", "an", "the", "is", "are", "was", "were", "be", "been",
+            "to", "of", "in", "for", "on", "with", "at", "by", "from",
+            "and", "or", "not", "no", "as", "it", "this", "that", "none",
+            "true", "false", "null", "undefined", "error", "exception",
+        }
+        return list(set(w for w in words if len(w) > 3 and w not in stop_words))[:20]
 
     def _generate_id(self) -> str:
         """Generate a unique ID for a new record."""
@@ -151,21 +183,36 @@ class DebugIndexManager:
         with open(record_file, "w", encoding="utf-8") as f:
             json.dump(record, f, ensure_ascii=False, indent=2)
 
-        # Update index
+        # Update index with compact entry
+        error_type = actual_context.get("error_type", "Unknown")
         index_entry = {
             "id": record_id,
-            "timestamp": timestamp,
-            "error_type": actual_context.get("error_type", "Unknown"),
-            "tags": tags,
-            "file": str(record_file),
+            "ts": timestamp,  # Shortened key for compactness
+            "et": error_type,  # error_type shortened
+            "tags": tags[:5],  # Limit stored tags
         }
         self._index["records"].append(index_entry)
 
-        # Update tag index
+        # Update tag inverted index
         for tag in tags:
-            if tag not in self._index["tags"]:
-                self._index["tags"][tag] = []
-            self._index["tags"][tag].append(record_id)
+            tag_lower = tag.lower()
+            if tag_lower not in self._index["tags"]:
+                self._index["tags"][tag_lower] = []
+            self._index["tags"][tag_lower].append(record_id)
+
+        # Update error type inverted index
+        et_lower = error_type.lower()
+        if et_lower not in self._index["error_types"]:
+            self._index["error_types"][et_lower] = []
+        self._index["error_types"][et_lower].append(record_id)
+
+        # Update keyword inverted index (from cause and solution)
+        keywords = self._extract_keywords(f"{cause} {solution}")
+        for kw in keywords:
+            if kw not in self._index["keywords"]:
+                self._index["keywords"][kw] = []
+            if record_id not in self._index["keywords"][kw]:
+                self._index["keywords"][kw].append(record_id)
 
         self._save_index()
         
@@ -209,9 +256,42 @@ class DebugIndexManager:
             limit: Maximum number of records to return
 
         Returns:
-            List of index entries
+            List of index entries (with normalized keys)
         """
-        return self._index["records"][-limit:]
+        records = self._index["records"][-limit:]
+        # Normalize compact keys for backward compatibility
+        normalized = []
+        for r in records:
+            normalized.append({
+                "id": r.get("id"),
+                "timestamp": r.get("ts") or r.get("timestamp"),
+                "error_type": r.get("et") or r.get("error_type", "Unknown"),
+                "tags": r.get("tags", []),
+            })
+        return normalized
+
+    def search_by_keywords(self, keywords: list[str], limit: int = 10) -> list[str]:
+        """
+        Fast keyword search using inverted index.
+
+        Args:
+            keywords: List of keywords to search for
+            limit: Maximum number of record IDs to return
+
+        Returns:
+            List of matching record IDs, sorted by match count
+        """
+        # Count matches per record
+        match_counts: dict[str, int] = {}
+        for kw in keywords:
+            kw_lower = kw.lower()
+            if kw_lower in self._index.get("keywords", {}):
+                for record_id in self._index["keywords"][kw_lower]:
+                    match_counts[record_id] = match_counts.get(record_id, 0) + 1
+
+        # Sort by match count (descending)
+        sorted_ids = sorted(match_counts.keys(), key=lambda x: match_counts[x], reverse=True)
+        return sorted_ids[:limit]
 
     def search_by_tag(self, tag: str) -> list[dict[str, Any]]:
         """

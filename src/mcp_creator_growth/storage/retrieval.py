@@ -52,7 +52,11 @@ class DebugRetrieval:
         tags: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         """
-        Search for relevant debug records.
+        Search for relevant debug records using optimized inverted index.
+
+        Uses a two-phase approach:
+        1. Fast pre-filter using inverted index (keywords, error_type, tags)
+        2. Fine-grained scoring on candidate set only
 
         Args:
             query: Search query (error message or description)
@@ -65,16 +69,30 @@ class DebugRetrieval:
         """
         debug_log(f"Searching debug records: query='{query[:50]}...', limit={limit}")
 
-        # Get all records
-        all_records = self._get_all_records()
+        # Phase 1: Use inverted index to get candidates
+        query_terms = self._tokenize(query.lower())
+        candidate_ids = set()
 
-        if not all_records:
-            debug_log("No records found in index")
+        # Get candidates from keyword index
+        if hasattr(self.index_manager, 'search_by_keywords'):
+            keyword_matches = self.index_manager.search_by_keywords(query_terms, limit=limit * 3)
+            candidate_ids.update(keyword_matches)
+
+        # If no keyword matches or too few, fall back to recent records
+        if len(candidate_ids) < limit:
+            recent = self.index_manager.list_records(limit=limit * 2)
+            candidate_ids.update(r["id"] for r in recent)
+
+        if not candidate_ids:
+            debug_log("No candidates found")
             return []
 
-        # Score each record
+        # Phase 2: Score only the candidates (not all records)
         scored_records = []
-        for record in all_records:
+        for record_id in candidate_ids:
+            record = self.index_manager.get_record(record_id)
+            if not record:
+                continue
             score = self._calculate_relevance(record, query, error_type, tags)
             if score > 0:
                 scored_records.append({
@@ -89,7 +107,7 @@ class DebugRetrieval:
         results = []
         for item in scored_records[:limit]:
             record = item["record"]
-            record["relevance_score"] = item["score"]
+            record["relevance_score"] = round(item["score"], 2)
             results.append(record)
 
         debug_log(f"Found {len(results)} relevant records")

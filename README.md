@@ -5,12 +5,23 @@ A context-aware learning assistant for AI coding that helps developers **learn f
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-## Why This Tool?
+## Design Philosophy
 
-When AI writes code for you, **do you actually learn?** This MCP server creates a **blocking learning session** that:
-- Waits until you complete an interactive quiz about the changes
-- Tracks your debugging experiences for future reference (RAG-based)
-- Helps you build real understanding, not just copy-paste habits
+> **Learning is for the User. Debug is for the Agent.**
+
+This project follows two core principles:
+
+| Component | Purpose | Beneficiary |
+|-----------|---------|-------------|
+| `learning_session` | Help users understand AI-generated changes | **User** |
+| `debug_search/record` | Build project-specific knowledge base | **Agent** |
+
+### Low Intrusion, High Value
+
+- **Minimal context pollution**: Return values are deliberately compact to reduce token usage
+- **Progressive disclosure**: Debug search returns summaries first, not full records
+- **Inverted index**: Fast keyword-based lookups without loading all records
+- **Local-first**: All data stored in `.mcp-sidecar/` - your data stays yours
 
 ## Features
 
@@ -18,7 +29,8 @@ When AI writes code for you, **do you actually learn?** This MCP server creates 
 - **Interactive Quizzes** - Verify your understanding with targeted questions
 - **5-Why Reasoning** - Understand the "why" behind code decisions
 - **Debug Experience RAG** - Search and record debugging solutions for reuse
-- **Token-Efficient** - Designed to minimize unnecessary AI output
+- **Token-Efficient** - Returns minimal data to reduce context pollution
+- **Optimized Indexing** - Inverted index for fast keyword searches
 
 ## Quick Start
 
@@ -148,14 +160,13 @@ For any MCP-compatible IDE, use these settings:
 
 ### Available Tools
 
-| Tool | Trigger | Description |
-|------|---------|-------------|
-| `learning_session` | User explicit request | Creates a blocking learning session with quiz |
-| `debug_search` | Automatic | Search historical debug experiences |
-| `debug_record` | Automatic | Record new debug solutions |
-| `get_system_info` | Automatic | Get system environment info |
+| Tool | Trigger | For | Returns |
+|------|---------|-----|---------|
+| `learning_session` | User explicit request | **User** | `{status, action}` - minimal |
+| `debug_search` | Automatic (on error) | **Agent** | Compact summaries |
+| `debug_record` | Automatic (after fix) | **Agent** | `{ok, id}` - minimal |
 
-### Trigger Learning Session
+### For Users: Learning Session
 
 Say to your AI assistant:
 - "Quiz me on this change"
@@ -164,11 +175,15 @@ Say to your AI assistant:
 
 The agent will create an interactive learning card and **wait** until you complete it.
 
-### Debug Tools
+> **Note**: Quiz scores are saved locally for your self-tracking but are NOT returned to the agent - this keeps the context clean.
+
+### For Agents: Debug Tools
 
 The debug tools work silently in the background:
-- When the AI encounters an error, it searches your past solutions
-- When the AI fixes an error, it records the solution for future use
+- **Search first**: When encountering errors, agent searches past solutions
+- **Record after**: When fixing errors, agent records the solution
+- **Progressive disclosure**: Returns compact summaries, not full records
+- **Fast lookups**: Uses inverted index for keyword-based searches
 
 ## Updating
 
@@ -206,10 +221,28 @@ default_timeout = 600  # 10 minutes
 
 ## Data Storage
 
-All data is stored locally:
+All data is stored locally in `.mcp-sidecar/`:
 
+```
+.mcp-sidecar/
+├── meta.json              # Project metadata
+├── debug/
+│   ├── index.json         # Optimized index with inverted lookups
+│   └── *.json             # Individual debug records
+├── sessions/
+│   └── *.json             # Learning session history
+└── terms/
+    └── shown.json         # Shown terms tracking
+```
+
+**Storage locations:**
 - **Project-level:** `{project}/.mcp-sidecar/` (tracked with git if you want)
 - **Global:** `~/.config/mcp-sidecar/` (personal, never tracked)
+
+**Index optimization:**
+- Inverted index for keywords, tags, and error types
+- Compact record entries to reduce file size
+- Lazy loading - only fetches full records when needed
 
 ## Development
 

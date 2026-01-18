@@ -3,16 +3,14 @@
 # Or: .\scripts\install.ps1
 #
 # Parameters:
-#   -InstallPath     - Custom installation path (default: ~/mcp-creator-growth)
-#   -UseUV           - Force use uv
-#   -UseConda        - Force use conda
-#   -SkipClaudeConfig - Skip Claude Code configuration output
+#   -InstallPath - Custom installation path (default: ~/mcp-creator-growth)
+#   -UseUV       - Force use uv
+#   -UseConda    - Force use conda
 
 param(
     [string]$InstallPath = "$env:USERPROFILE\mcp-creator-growth",
     [switch]$UseUV,
-    [switch]$UseConda,
-    [switch]$SkipClaudeConfig
+    [switch]$UseConda
 )
 
 $ErrorActionPreference = "Stop"
@@ -49,7 +47,7 @@ function Install-UV {
 }
 
 # Step 1: Detect or install environment manager
-Write-Host "[1/5] Setting up Python environment..." -ForegroundColor Yellow
+Write-Host "[1/4] Setting up Python environment..." -ForegroundColor Yellow
 
 if ($UseUV) {
     $EnvManager = "uv"
@@ -92,7 +90,7 @@ Write-Host "  Using: $EnvManager" -ForegroundColor Cyan
 
 # Step 2: Clone or update repository
 Write-Host ""
-Write-Host "[2/5] Setting up repository..." -ForegroundColor Yellow
+Write-Host "[2/4] Setting up repository..." -ForegroundColor Yellow
 if (Test-Path $InstallPath) {
     Write-Host "  Directory exists. Updating..." -ForegroundColor Gray
     Push-Location $InstallPath
@@ -107,7 +105,7 @@ Push-Location $InstallPath
 
 # Step 3: Create virtual environment
 Write-Host ""
-Write-Host "[3/5] Creating virtual environment..." -ForegroundColor Yellow
+Write-Host "[3/4] Creating virtual environment..." -ForegroundColor Yellow
 
 switch ($EnvManager) {
     "uv" {
@@ -145,7 +143,7 @@ switch ($EnvManager) {
 
 # Step 4: Install dependencies
 Write-Host ""
-Write-Host "[4/5] Installing dependencies..." -ForegroundColor Yellow
+Write-Host "[4/4] Installing dependencies..." -ForegroundColor Yellow
 
 switch ($EnvManager) {
     "uv" {
@@ -163,39 +161,8 @@ switch ($EnvManager) {
 
 Write-Host "  Dependencies installed." -ForegroundColor Green
 
-# Step 5: Configure Claude Code
-Write-Host ""
-Write-Host "[5/5] Configuring Claude Code..." -ForegroundColor Yellow
-
 # Save environment manager info for update script
 $EnvManager | Out-File -FilePath "$InstallPath\.env_manager" -Encoding UTF8 -NoNewline
-
-if (-not $SkipClaudeConfig) {
-    $mcpConfig = @{
-        mcpServers = @{
-            "mcp-creator-growth" = @{
-                command = $PythonPath
-                args = @("-m", "mcp_creator_growth")
-                env = @{
-                    MCP_DEBUG = "false"
-                }
-            }
-        }
-    }
-
-    $configJson = $mcpConfig | ConvertTo-Json -Depth 4
-
-    Write-Host ""
-    Write-Host "  Add the following to your Claude Code MCP settings:" -ForegroundColor Cyan
-    Write-Host "  (Settings > MCP Servers > Edit Config)" -ForegroundColor Gray
-    Write-Host ""
-    Write-Host $configJson -ForegroundColor White
-    Write-Host ""
-
-    # Also save to a file for reference
-    $configJson | Out-File -FilePath "$InstallPath\claude-mcp-config.json" -Encoding UTF8
-    Write-Host "  Config saved to: $InstallPath\claude-mcp-config.json" -ForegroundColor Gray
-}
 
 Pop-Location
 
@@ -207,11 +174,20 @@ Write-Host ""
 Write-Host "Environment: $EnvManager" -ForegroundColor Cyan
 Write-Host "Python path: $PythonPath" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Yellow
-Write-Host "  1. Open Claude Code" -ForegroundColor White
-Write-Host "  2. Go to Settings > MCP Servers" -ForegroundColor White
-Write-Host "  3. Add the configuration shown above" -ForegroundColor White
-Write-Host "  4. Restart Claude Code" -ForegroundColor White
+Write-Host "================================================" -ForegroundColor Cyan
+Write-Host "  Configure Your IDE" -ForegroundColor Cyan
+Write-Host "================================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Add this MCP server configuration to your IDE:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  Python command: $PythonPath" -ForegroundColor White
+Write-Host "  Arguments:      -m mcp_creator_growth" -ForegroundColor White
+Write-Host ""
+Write-Host "For Claude Code:" -ForegroundColor Yellow
+Write-Host "  claude mcp add mcp-creator-growth -- `"$PythonPath`" -m mcp_creator_growth" -ForegroundColor White
+Write-Host ""
+Write-Host "For other IDEs (Cursor, Windsurf, etc.):" -ForegroundColor Yellow
+Write-Host "  See README.md for detailed configuration instructions." -ForegroundColor White
 Write-Host ""
 Write-Host "To update later, run:" -ForegroundColor Yellow
 Write-Host "  $InstallPath\scripts\update.ps1" -ForegroundColor White

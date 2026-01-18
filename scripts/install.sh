@@ -41,7 +41,7 @@ install_uv() {
 }
 
 # Step 1: Detect or install environment manager
-echo "[1/5] Setting up Python environment..."
+echo "[1/4] Setting up Python environment..."
 
 # Check user preference
 if [ "$MCP_USE_UV" = "1" ]; then
@@ -86,7 +86,7 @@ echo "  Using: $ENV_MANAGER"
 
 # Step 2: Clone or update repository
 echo ""
-echo "[2/5] Setting up repository..."
+echo "[2/4] Setting up repository..."
 if [ -d "$INSTALL_PATH" ]; then
     echo "  Directory exists. Updating..."
     cd "$INSTALL_PATH"
@@ -99,7 +99,7 @@ fi
 
 # Step 3: Create virtual environment
 echo ""
-echo "[3/5] Creating virtual environment..."
+echo "[3/4] Creating virtual environment..."
 
 case "$ENV_MANAGER" in
     "uv")
@@ -135,7 +135,7 @@ esac
 
 # Step 4: Install dependencies
 echo ""
-echo "[4/5] Installing dependencies..."
+echo "[4/4] Installing dependencies..."
 
 case "$ENV_MANAGER" in
     "uv")
@@ -154,48 +154,8 @@ esac
 
 echo "  Dependencies installed."
 
-# Step 5: Configure Claude Code
-echo ""
-echo "[5/5] Configuring Claude Code..."
-
 # Save environment manager info for update script
 echo "$ENV_MANAGER" > "$INSTALL_PATH/.env_manager"
-
-cat << EOF
-
-  Add the following to your Claude Code MCP settings:
-  (Settings > MCP Servers > Edit Config)
-
-{
-  "mcpServers": {
-    "mcp-creator-growth": {
-      "command": "$PYTHON_PATH",
-      "args": ["-m", "mcp_creator_growth"],
-      "env": {
-        "MCP_DEBUG": "false"
-      }
-    }
-  }
-}
-
-EOF
-
-# Save config to file
-cat > "$INSTALL_PATH/claude-mcp-config.json" << EOF
-{
-  "mcpServers": {
-    "mcp-creator-growth": {
-      "command": "$PYTHON_PATH",
-      "args": ["-m", "mcp_creator_growth"],
-      "env": {
-        "MCP_DEBUG": "false"
-      }
-    }
-  }
-}
-EOF
-
-echo "  Config saved to: $INSTALL_PATH/claude-mcp-config.json"
 
 echo ""
 echo "================================================"
@@ -205,11 +165,20 @@ echo ""
 echo "Environment: $ENV_MANAGER"
 echo "Python path: $PYTHON_PATH"
 echo ""
-echo "Next steps:"
-echo "  1. Open Claude Code"
-echo "  2. Go to Settings > MCP Servers"
-echo "  3. Add the configuration shown above"
-echo "  4. Restart Claude Code"
+echo "================================================"
+echo "  Configure Your IDE"
+echo "================================================"
+echo ""
+echo "Add this MCP server configuration to your IDE:"
+echo ""
+echo "  Python command: $PYTHON_PATH"
+echo "  Arguments:      -m mcp_creator_growth"
+echo ""
+echo "For Claude Code:"
+echo "  claude mcp add mcp-creator-growth -- $PYTHON_PATH -m mcp_creator_growth"
+echo ""
+echo "For other IDEs (Cursor, Windsurf, etc.):"
+echo "  See README.md for detailed configuration instructions."
 echo ""
 echo "To update later, run:"
 echo "  $INSTALL_PATH/scripts/update.sh"

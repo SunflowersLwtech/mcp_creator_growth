@@ -1,10 +1,11 @@
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "/path/to/mcp_creator_growth/venv/bin/python",
+      "type": "stdio",
+      "command": "${HOME}/mcp-creator-growth/.venv/bin/python",
       "args": ["-m", "mcp_creator_growth"],
       "env": {
-        "MCP_DEBUG": "false"
+        "MCP_DEBUG": "${MCP_DEBUG:-false}"
       }
     }
   }

@@ -24,15 +24,22 @@ When AI writes code for you, **do you actually learn?** This MCP server creates 
 
 ### One-Line Installation
 
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.sh | bash
+```
+
 **Windows (PowerShell):**
 ```powershell
 irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.ps1 | iex
 ```
 
-**macOS / Linux:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.sh | bash
-```
+The installer will:
+1. Auto-detect your environment (uv / conda / system Python)
+2. Install Python 3.11+ via uv if needed
+3. Create a virtual environment
+4. Install all dependencies
+5. Display the configuration command for your IDE
 
 ### Manual Installation
 
@@ -44,55 +51,93 @@ curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth
 
 2. **Create virtual environment:**
    ```bash
+   # Using uv (recommended)
+   uv venv --python 3.11 .venv
+   source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+   uv pip install -e ".[dev]"
+
+   # Or using standard venv
    python -m venv venv
-
-   # Windows
-   .\venv\Scripts\activate
-
-   # macOS/Linux
-   source venv/bin/activate
-   ```
-
-3. **Install dependencies:**
-   ```bash
+   source venv/bin/activate  # or venv\Scripts\activate on Windows
    pip install -e ".[dev]"
    ```
 
-## Configure Claude Code
+## IDE Configuration
 
-Add the following to your Claude Code MCP settings:
+After installation, configure your AI coding IDE to use this MCP server.
 
-**Windows:**
+### Claude Code
+
+**Option 1: CLI (Recommended)**
+```bash
+# macOS / Linux
+claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/python -m mcp_creator_growth
+
+# Windows
+claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\python.exe -m mcp_creator_growth
+```
+
+**Option 2: Config File**
+
+Add to `~/.claude.json`:
 ```json
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "C:\\path\\to\\mcp_creator_growth\\venv\\Scripts\\python.exe",
-      "args": ["-m", "mcp_creator_growth"],
-      "env": {
-        "MCP_DEBUG": "false"
-      }
+      "type": "stdio",
+      "command": "~/mcp-creator-growth/.venv/bin/python",
+      "args": ["-m", "mcp_creator_growth"]
     }
   }
 }
 ```
 
-**macOS / Linux:**
+### Cursor
+
+Add to Cursor MCP settings (Settings → MCP → Add Server):
+
+```json
+{
+  "mcp-creator-growth": {
+    "command": "~/mcp-creator-growth/.venv/bin/python",
+    "args": ["-m", "mcp_creator_growth"]
+  }
+}
+```
+
+For Windows, use:
+```json
+{
+  "mcp-creator-growth": {
+    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\python.exe",
+    "args": ["-m", "mcp_creator_growth"]
+  }
+}
+```
+
+### Windsurf
+
+Add to `~/.codeium/windsurf/mcp_config.json`:
+
 ```json
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "/path/to/mcp_creator_growth/venv/bin/python",
-      "args": ["-m", "mcp_creator_growth"],
-      "env": {
-        "MCP_DEBUG": "false"
-      }
+      "command": "~/mcp-creator-growth/.venv/bin/python",
+      "args": ["-m", "mcp_creator_growth"]
     }
   }
 }
 ```
 
-Then restart Claude Code.
+### Other IDEs
+
+For any MCP-compatible IDE, use these settings:
+- **Command:** `<install-path>/.venv/bin/python` (or `.venv\Scripts\python.exe` on Windows)
+- **Arguments:** `-m mcp_creator_growth`
+- **Transport:** stdio
+
+**After configuration, restart your IDE.**
 
 ## Usage
 
@@ -107,7 +152,7 @@ Then restart Claude Code.
 
 ### Trigger Learning Session
 
-Say to Claude:
+Say to your AI assistant:
 - "Quiz me on this change"
 - "Test my understanding"
 - "Help me learn about what you did"
@@ -117,22 +162,22 @@ The agent will create an interactive learning card and **wait** until you comple
 ### Debug Tools
 
 The debug tools work silently in the background:
-- When Claude encounters an error, it searches your past solutions
-- When Claude fixes an error, it records the solution for future use
+- When the AI encounters an error, it searches your past solutions
+- When the AI fixes an error, it records the solution for future use
 
 ## Updating
 
-**Windows:**
-```powershell
-.\scripts\update.ps1
-```
-
 **macOS / Linux:**
 ```bash
-./scripts/update.sh
+~/mcp-creator-growth/scripts/update.sh
 ```
 
-Then restart Claude Code.
+**Windows:**
+```powershell
+~\mcp-creator-growth\scripts\update.ps1
+```
+
+Then restart your IDE.
 
 ## Configuration
 

@@ -2,7 +2,8 @@
 # Usage: .\scripts\update.ps1
 
 param(
-    [string]$InstallPath = $PSScriptRoot.Replace("\scripts", "")
+    [string]$InstallPath = $PSScriptRoot.Replace("\scripts", ""),
+    [switch]$Force
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,6 +14,32 @@ Write-Host "================================================" -ForegroundColor C
 Write-Host ""
 
 Push-Location $InstallPath
+
+# Function to check if exe is locked
+function Test-FileLocked {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return $false }
+    try {
+        $file = [System.IO.File]::Open($Path, 'Open', 'Write')
+        $file.Close()
+        return $false
+    } catch {
+        return $true
+    }
+}
+
+# Function to find and display processes using the exe
+function Get-LockingProcesses {
+    param([string]$ExePath)
+    $processes = @()
+    try {
+        $handle = Get-Process | Where-Object {
+            $_.Path -eq $ExePath -or $_.MainModule.FileName -eq $ExePath
+        } -ErrorAction SilentlyContinue
+        if ($handle) { $processes += $handle }
+    } catch {}
+    return $processes
+}
 
 # Read environment manager from saved file
 if (Test-Path ".env_manager") {
@@ -68,21 +95,57 @@ Write-Host "  Changes pulled." -ForegroundColor Green
 Write-Host ""
 Write-Host "[2/3] Updating dependencies..." -ForegroundColor Yellow
 
-switch ($EnvManager) {
-    "uv" {
-        uv pip install -e ".[dev]" --quiet --upgrade
-    }
+# Determine exe path based on environment
+$ExePath = switch ($EnvManager) {
+    "uv" { "$InstallPath\.venv\Scripts\mcp-creator-growth.exe" }
     "conda" {
-        conda activate mcp-creator-growth
-        pip install -e ".[dev]" --quiet --upgrade
-        conda deactivate
+        $condaInfo = conda env list | Select-String "mcp-creator-growth"
+        if ($condaInfo) {
+            $CondaEnvPath = ($condaInfo -split '\s+')[-1]
+            "$CondaEnvPath\Scripts\mcp-creator-growth.exe"
+        } else { $null }
     }
-    "venv" {
-        & ".\venv\Scripts\pip.exe" install -e ".[dev]" --quiet --upgrade
-    }
+    "venv" { "$InstallPath\venv\Scripts\mcp-creator-growth.exe" }
 }
 
-Write-Host "  Dependencies updated." -ForegroundColor Green
+# Check if exe is locked (in use by an AI coding assistant or IDE)
+if ($ExePath -and (Test-FileLocked $ExePath)) {
+    Write-Host ""
+    Write-Host "  WARNING: mcp-creator-growth.exe is currently in use!" -ForegroundColor Yellow
+    Write-Host "  An AI coding assistant or IDE is likely using this MCP server." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  To update successfully, please:" -ForegroundColor Cyan
+    Write-Host "    1. Close any AI coding assistant using this MCP server" -ForegroundColor White
+    Write-Host "       (e.g., Claude Code, Cursor, Windsurf, VS Code, etc.)" -ForegroundColor Gray
+    Write-Host "    2. Run this update script again" -ForegroundColor White
+    Write-Host ""
+
+    if (-not $Force) {
+        Write-Host "  Or use -Force to skip dependency update (code changes only):" -ForegroundColor Gray
+        Write-Host "    .\scripts\update.ps1 -Force" -ForegroundColor Gray
+        Write-Host ""
+        Pop-Location
+        exit 1
+    } else {
+        Write-Host "  -Force flag detected, skipping dependency update..." -ForegroundColor Yellow
+    }
+} else {
+    # Safe to update
+    switch ($EnvManager) {
+        "uv" {
+            uv pip install -e ".[dev]" --quiet --upgrade
+        }
+        "conda" {
+            conda activate mcp-creator-growth
+            pip install -e ".[dev]" --quiet --upgrade
+            conda deactivate
+        }
+        "venv" {
+            & ".\venv\Scripts\pip.exe" install -e ".[dev]" --quiet --upgrade
+        }
+    }
+    Write-Host "  Dependencies updated." -ForegroundColor Green
+}
 
 # Get new version
 $newVersion = "unknown"
@@ -104,5 +167,6 @@ Write-Host "================================================" -ForegroundColor G
 Write-Host "  Update Complete!" -ForegroundColor Green
 Write-Host "================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "Please restart Claude Code to apply changes." -ForegroundColor Yellow
+Write-Host "Please restart your AI coding assistant to apply changes." -ForegroundColor Yellow
+Write-Host "(e.g., Claude Code, Cursor, Windsurf, VS Code, etc.)" -ForegroundColor Gray
 Write-Host ""

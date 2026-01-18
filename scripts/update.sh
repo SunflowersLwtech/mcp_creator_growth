@@ -61,6 +61,32 @@ chmod +x "$INSTALL_PATH/scripts/"*.sh 2>/dev/null || true
 echo ""
 echo "[2/3] Updating dependencies..."
 
+# Determine script path based on environment
+case "$ENV_MANAGER" in
+    "uv")
+        SCRIPT_PATH="$INSTALL_PATH/.venv/bin/mcp-creator-growth"
+        ;;
+    "conda")
+        CONDA_ENV_PATH=$(conda env list | grep "mcp-creator-growth" | awk '{print $NF}')
+        SCRIPT_PATH="$CONDA_ENV_PATH/bin/mcp-creator-growth"
+        ;;
+    "venv")
+        SCRIPT_PATH="$INSTALL_PATH/venv/bin/mcp-creator-growth"
+        ;;
+esac
+
+# Check if the script is currently running (optional warning for macOS/Linux)
+if [ -n "$SCRIPT_PATH" ] && [ -f "$SCRIPT_PATH" ]; then
+    if pgrep -f "$SCRIPT_PATH" > /dev/null 2>&1; then
+        echo ""
+        echo "  NOTE: mcp-creator-growth appears to be running."
+        echo "  An AI coding assistant may be using this MCP server."
+        echo "  If you encounter issues, please close your IDE and try again."
+        echo "  (e.g., Claude Code, Cursor, Windsurf, VS Code, etc.)"
+        echo ""
+    fi
+fi
+
 case "$ENV_MANAGER" in
     "uv")
         uv pip install -e ".[dev]" --quiet --upgrade
@@ -90,5 +116,6 @@ echo "================================================"
 echo "  Update Complete!"
 echo "================================================"
 echo ""
-echo "Please restart Claude Code to apply changes."
+echo "Please restart your AI coding assistant to apply changes."
+echo "(e.g., Claude Code, Cursor, Windsurf, VS Code, etc.)"
 echo ""

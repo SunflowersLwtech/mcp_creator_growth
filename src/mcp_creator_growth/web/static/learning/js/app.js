@@ -483,8 +483,8 @@ function initWebSocket() {
         onStateChange: updateConnectionStatus
     });
 
-    // Optionally connect WebSocket
-    // state.wsManager.connect(getSessionIdFromUrl());
+    // Connect WebSocket for real-time updates
+    state.wsManager.connect(getSessionIdFromUrl());
 }
 
 // ==================== Initialize ====================

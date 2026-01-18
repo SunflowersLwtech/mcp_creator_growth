@@ -50,9 +50,22 @@ if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
     exit 0
 fi
 
+# Get script hash before update
+SCRIPT_PATH_SELF="$(realpath "$0")"
+HASH_BEFORE=$(md5sum "$SCRIPT_PATH_SELF" 2>/dev/null | cut -d' ' -f1 || echo "none")
+
 # Reset any local changes (safe for installed copy)
 git reset --hard origin/main
 echo "  Changes pulled."
+
+# Check if the update script itself was updated
+HASH_AFTER=$(md5sum "$SCRIPT_PATH_SELF" 2>/dev/null | cut -d' ' -f1 || echo "none")
+if [ "$HASH_BEFORE" != "$HASH_AFTER" ] && [ "$HASH_BEFORE" != "none" ]; then
+    echo ""
+    echo "  Update script was updated. Restarting with new version..."
+    echo ""
+    exec "$SCRIPT_PATH_SELF" "$@"
+fi
 
 # Ensure scripts are executable
 chmod +x "$INSTALL_PATH/scripts/"*.sh 2>/dev/null || true

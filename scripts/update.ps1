@@ -87,9 +87,27 @@ if ($localCommit -eq $remoteCommit) {
     exit 0
 }
 
+# Get script hash before update
+$scriptPath = $PSCommandPath
+$hashBefore = (Get-FileHash $scriptPath -Algorithm MD5).Hash
+
 # Reset any local changes (safe for installed copy)
 git reset --hard origin/main
 Write-Host "  Changes pulled." -ForegroundColor Green
+
+# Check if the update script itself was updated
+$hashAfter = (Get-FileHash $scriptPath -Algorithm MD5).Hash
+if ($hashBefore -ne $hashAfter) {
+    Write-Host ""
+    Write-Host "  Update script was updated. Restarting with new version..." -ForegroundColor Cyan
+    Write-Host ""
+    # Re-invoke with same parameters
+    $restartArgs = @("-File", $scriptPath)
+    if ($Force) { $restartArgs += "-Force" }
+    Start-Process -FilePath "powershell.exe" -ArgumentList $restartArgs -NoNewWindow -Wait
+    Pop-Location
+    exit 0
+}
 
 # Update dependencies
 Write-Host ""

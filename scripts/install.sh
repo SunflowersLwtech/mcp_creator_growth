@@ -97,6 +97,9 @@ else
     cd "$INSTALL_PATH"
 fi
 
+# Ensure scripts are executable
+chmod +x "$INSTALL_PATH/scripts/"*.sh 2>/dev/null || true
+
 # Step 3: Create virtual environment
 echo ""
 echo "[3/4] Creating virtual environment..."

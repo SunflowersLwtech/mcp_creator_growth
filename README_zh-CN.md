@@ -7,6 +7,18 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Standard](https://img.shields.io/badge/MCP-Standard-green.svg)](https://modelcontextprotocol.io/)
+[![Glama MCP](https://img.shields.io/badge/Glama-MCP%20Server-blue)](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-文档-purple)](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth)
+
+---
+
+## 🌐 资源链接
+
+| 资源 | 描述 |
+|------|------|
+| [**Glama MCP 市场**](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth) | 官方 MCP 服务器列表，含安装指南 |
+| [**DeepWiki 文档**](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth) | AI 生成的代码库深度解析 |
+| [**GitHub 仓库**](https://github.com/SunflowersLwtech/mcp_creator_growth) | 源代码、Issue 和贡献 |
 
 ---
 
@@ -331,6 +343,18 @@ claude mcp get mcp-creator-growth  # 检查此服务器状态
 4. 进行更改并运行测试：`pytest`
 5. 提交 Pull Request
 
+详细指南请参阅 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+---
+
+## 📬 联系方式
+
+| 渠道 | 地址 |
+|------|------|
+| **邮箱** | sunflowers0607@outlook.com |
+| **邮箱** | weiliu0607@gmail.com |
+| **GitHub Issues** | [提交 Issue](https://github.com/SunflowersLwtech/mcp_creator_growth/issues) |
+
 ---
 
 ## 📄 许可证
@@ -341,5 +365,6 @@ claude mcp get mcp-creator-growth  # 检查此服务器状态
 
 <p align="center">
   基于 <a href="https://github.com/jlowin/fastmcp">FastMCP</a> 构建 •
-  <a href="https://modelcontextprotocol.io">MCP 标准</a>
+  <a href="https://modelcontextprotocol.io">MCP 标准</a> •
+  <a href="https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth">Glama MCP</a>
 </p>

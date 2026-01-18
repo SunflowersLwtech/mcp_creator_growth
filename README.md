@@ -7,6 +7,18 @@ A context-aware **Model Context Protocol (MCP)** server that acts as a learning 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Standard](https://img.shields.io/badge/MCP-Standard-green.svg)](https://modelcontextprotocol.io/)
+[![Glama MCP](https://img.shields.io/badge/Glama-MCP%20Server-blue)](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-Documentation-purple)](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth)
+
+---
+
+## 🌐 Resources
+
+| Resource | Description |
+|----------|-------------|
+| [**Glama MCP Marketplace**](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth) | Official MCP server listing with installation guides |
+| [**DeepWiki Documentation**](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth) | AI-generated deep analysis of the codebase |
+| [**GitHub Repository**](https://github.com/SunflowersLwtech/mcp_creator_growth) | Source code, issues, and contributions |
 
 ---
 
@@ -331,6 +343,18 @@ We welcome contributions! Please follow these steps:
 4. Make changes and run tests: `pytest`
 5. Submit a Pull Request
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 📬 Contact
+
+| Channel | Address |
+|---------|---------|
+| **Email** | sunflowers0607@outlook.com |
+| **Email** | weiliu0607@gmail.com |
+| **GitHub Issues** | [Open an Issue](https://github.com/SunflowersLwtech/mcp_creator_growth/issues) |
+
 ---
 
 ## 📄 License
@@ -341,5 +365,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 <p align="center">
   Built with <a href="https://github.com/jlowin/fastmcp">FastMCP</a> •
-  <a href="https://modelcontextprotocol.io">MCP Standard</a>
+  <a href="https://modelcontextprotocol.io">MCP Standard</a> •
+  <a href="https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth">Glama MCP</a>
 </p>

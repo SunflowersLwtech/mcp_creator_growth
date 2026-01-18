@@ -1,4 +1,6 @@
-# MCP Creator Growth
+# <img src="assets/icon.png" width="48" height="48" align="top" style="margin-right: 10px;"> MCP Creator Growth [Visit Website](https://github.com/SunflowersLwtech/mcp_creator_growth)
+
+[English](README.md) | [简体中文](README_zh-CN.md) | [繁體中文](README_zh-TW.md)
 
 A context-aware learning assistant for AI coding that helps developers **learn from AI-generated code changes** through interactive quizzes and debug experience tracking.
 

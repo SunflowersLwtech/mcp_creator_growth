@@ -170,13 +170,13 @@ cd mcp_creator_growth
 uv venv --python 3.11 .venv
 source .venv/bin/activate          # macOS/Linux
 # .venv\Scripts\activate           # Windows
-uv pip install -e ".[dev]"
+uv pip install -e '.[dev]'
 
 # 或使用標準 venv
 python -m venv venv
 source venv/bin/activate           # macOS/Linux
 # venv\Scripts\activate            # Windows
-pip install -e ".[dev]"
+pip install -e '.[dev]'
 ```
 
 </details>
@@ -339,7 +339,7 @@ claude mcp get mcp-creator-growth  # 檢查此伺服器狀態
 
 1. Fork 本倉庫
 2. 建立特性分支：`git checkout -b feature/amazing-feature`
-3. 安裝開發依賴：`uv pip install -e ".[dev]"`
+3. 安裝開發依賴：`uv pip install -e '.[dev]'`
 4. 進行更改並執行測試：`pytest`
 5. 提交 Pull Request
 

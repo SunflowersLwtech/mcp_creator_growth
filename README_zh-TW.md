@@ -82,38 +82,47 @@ irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/s
 
 ### Claude Code
 
-**選項 1：CLI (推薦)**
+**選項 1：使用安裝腳本輸出的命令（推薦）**
+
+安裝腳本會輸出適合你環境的確切命令。直接複製並運行：
+
+```
+For Claude Code (one command):
+  claude mcp add mcp-creator-growth -- "<你的實際路徑>"
+```
+
+**選項 2：手動查找路徑**
+
+如果你沒有保存安裝輸出，根據安裝方式查找可執行文件路徑：
+
+| 安裝方式 | 可執行文件路徑 |
+|---------|---------------|
+| uv (預設) | `~/mcp-creator-growth/.venv/bin/mcp-creator-growth` (Unix) 或 `.venv\Scripts\mcp-creator-growth.exe` (Windows) |
+| conda | `<conda路徑>/envs/mcp-creator-growth/bin/mcp-creator-growth` (Unix) 或 `Scripts\mcp-creator-growth.exe` (Windows) |
+| venv | `~/mcp-creator-growth/venv/bin/mcp-creator-growth` (Unix) 或 `venv\Scripts\mcp-creator-growth.exe` (Windows) |
+
+然後運行：
 ```bash
-# macOS / Linux
-claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
-
-# Windows
-claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
+claude mcp add mcp-creator-growth -- "<你的可執行文件路徑>"
 ```
 
-**選項 2：配置文件**
+**選項 3：配置文件**
 
-添加到 `~/.claude.json`：
+添加到 `~/.claude.json`（將 `<路徑>` 替換為你的實際可執行文件路徑）：
 ```json
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "<mcp-creator-growth可執行文件路徑>"
     }
   }
 }
 ```
 
-Windows 用戶：
-```json
-{
-  "mcpServers": {
-    "mcp-creator-growth": {
-      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
-    }
-  }
-}
-```
+示例路徑：
+- Unix (uv): `~/mcp-creator-growth/.venv/bin/mcp-creator-growth`
+- Windows (uv): `C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe`
+- Windows (conda): `C:\\Users\\YourName\\anaconda3\\envs\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 
 ### Cursor
 
@@ -122,16 +131,7 @@ Windows 用戶：
 ```json
 {
   "mcp-creator-growth": {
-    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
-  }
-}
-```
-
-Windows 用戶：
-```json
-{
-  "mcp-creator-growth": {
-    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
+    "command": "<mcp-creator-growth可執行文件路徑>"
   }
 }
 ```
@@ -144,7 +144,7 @@ Windows 用戶：
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "<mcp-creator-growth可執行文件路徑>"
     }
   }
 }
@@ -153,7 +153,7 @@ Windows 用戶：
 ### 其他 IDE
 
 對於任何兼容 MCP 的 IDE，使用這些設置：
-- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (或 Windows 上的 `.venv\Scripts\mcp-creator-growth.exe`)
+- **Command:** 使用安裝腳本輸出的可執行文件路徑（見上表）
 - **Transport:** stdio
 
 **配置完成後，重啟你的 IDE。**

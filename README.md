@@ -82,38 +82,47 @@ After installation, configure your AI coding IDE to use this MCP server.
 
 ### Claude Code
 
-**Option 1: CLI (Recommended)**
+**Option 1: Use the command from install script (Recommended)**
+
+The install script outputs the exact command for your environment. Copy and run it directly:
+
+```
+For Claude Code (one command):
+  claude mcp add mcp-creator-growth -- "<your-actual-path>"
+```
+
+**Option 2: Find the path manually**
+
+If you didn't save the install output, find your executable path:
+
+| Install Method | Executable Path |
+|---------------|-----------------|
+| uv (default) | `~/mcp-creator-growth/.venv/bin/mcp-creator-growth` (Unix) or `.venv\Scripts\mcp-creator-growth.exe` (Windows) |
+| conda | `<conda-path>/envs/mcp-creator-growth/bin/mcp-creator-growth` (Unix) or `Scripts\mcp-creator-growth.exe` (Windows) |
+| venv | `~/mcp-creator-growth/venv/bin/mcp-creator-growth` (Unix) or `venv\Scripts\mcp-creator-growth.exe` (Windows) |
+
+Then run:
 ```bash
-# macOS / Linux
-claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
-
-# Windows
-claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
+claude mcp add mcp-creator-growth -- "<your-executable-path>"
 ```
 
-**Option 2: Config File**
+**Option 3: Config File**
 
-Add to `~/.claude.json`:
+Add to `~/.claude.json` (replace `<path>` with your actual executable path):
 ```json
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "<path-to-mcp-creator-growth-executable>"
     }
   }
 }
 ```
 
-For Windows:
-```json
-{
-  "mcpServers": {
-    "mcp-creator-growth": {
-      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
-    }
-  }
-}
-```
+Example paths:
+- Unix (uv): `~/mcp-creator-growth/.venv/bin/mcp-creator-growth`
+- Windows (uv): `C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe`
+- Windows (conda): `C:\\Users\\YourName\\anaconda3\\envs\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 
 ### Cursor
 
@@ -122,16 +131,7 @@ Add to Cursor MCP settings (Settings → MCP → Add Server):
 ```json
 {
   "mcp-creator-growth": {
-    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
-  }
-}
-```
-
-For Windows:
-```json
-{
-  "mcp-creator-growth": {
-    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
+    "command": "<path-to-mcp-creator-growth-executable>"
   }
 }
 ```
@@ -144,7 +144,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "<path-to-mcp-creator-growth-executable>"
     }
   }
 }
@@ -153,7 +153,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 ### Other IDEs
 
 For any MCP-compatible IDE, use these settings:
-- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (or `.venv\Scripts\mcp-creator-growth.exe` on Windows)
+- **Command:** Use the executable path from the install script output (see table above)
 - **Transport:** stdio
 
 **After configuration, restart your IDE.**

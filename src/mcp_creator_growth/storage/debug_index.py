@@ -304,7 +304,7 @@ class DebugIndexManager:
             List of matching records
         """
         record_ids = self._index["tags"].get(tag, [])
-        return [self.get_record(rid) for rid in record_ids if self.get_record(rid)]
+        return [record for rid in record_ids if (record := self.get_record(rid))]
 
     def search_by_error_type(self, error_type: str) -> list[dict[str, Any]]:
         """

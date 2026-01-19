@@ -304,6 +304,7 @@ class DebugIndexManager:
             List of matching records
         """
         record_ids = self._index["tags"].get(tag, [])
+        # Use walrus operator to avoid double get_record() call - reduces I/O by 50%
         return [record for rid in record_ids if (record := self.get_record(rid))]
 
     def search_by_error_type(self, error_type: str) -> list[dict[str, Any]]:
@@ -323,6 +324,7 @@ class DebugIndexManager:
             if error_type.lower() in record_error_type.lower():
                 matching_ids.append(r["id"])
 
+        # Use walrus operator to avoid double get_record() call - reduces I/O by 50%
         return [record for rid in matching_ids if (record := self.get_record(rid))]
 
     def get_all_tags(self) -> list[str]:

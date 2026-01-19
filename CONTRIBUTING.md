@@ -65,7 +65,7 @@ source .venv/bin/activate          # macOS/Linux
 # .venv\Scripts\activate           # Windows
 
 # Install with dev dependencies
-uv pip install -e ".[dev]"
+uv pip install -e '.[dev]'
 ```
 
 </details>
@@ -82,7 +82,7 @@ source venv/bin/activate           # macOS/Linux
 # venv\Scripts\activate            # Windows
 
 # Install with dev dependencies
-pip install -e ".[dev]"
+pip install -e '.[dev]'
 ```
 
 </details>

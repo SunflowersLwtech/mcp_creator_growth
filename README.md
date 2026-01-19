@@ -170,13 +170,13 @@ cd mcp_creator_growth
 uv venv --python 3.11 .venv
 source .venv/bin/activate          # macOS/Linux
 # .venv\Scripts\activate           # Windows
-uv pip install -e ".[dev]"
+uv pip install -e '.[dev]'
 
 # Or using standard venv
 python -m venv venv
 source venv/bin/activate           # macOS/Linux
 # venv\Scripts\activate            # Windows
-pip install -e ".[dev]"
+pip install -e '.[dev]'
 ```
 
 </details>
@@ -339,7 +339,7 @@ We welcome contributions! Please follow these steps:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Install dev dependencies: `uv pip install -e ".[dev]"`
+3. Install dev dependencies: `uv pip install -e '.[dev]'`
 4. Make changes and run tests: `pytest`
 5. Submit a Pull Request
 

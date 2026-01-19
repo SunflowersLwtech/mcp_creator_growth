@@ -305,6 +305,72 @@ For Claude Desktop, Cursor, Windsurf, or other MCP-compatible IDEs:
 
 ---
 
+## 🔄 Updating
+
+### One-Line Update (Recommended)
+
+If you installed using the one-line installer, update is just as easy:
+
+<table>
+<tr>
+<th>Platform</th>
+<th>Command</th>
+</tr>
+<tr>
+<td><b>macOS / Linux</b></td>
+<td>
+
+```bash
+~/mcp-creator-growth/scripts/update.sh
+```
+
+</td>
+</tr>
+<tr>
+<td><b>Windows (PowerShell)</b></td>
+<td>
+
+```powershell
+~\mcp-creator-growth\scripts\update.ps1
+```
+
+</td>
+</tr>
+</table>
+
+The update script will:
+1. Pull the latest changes from the repository
+2. Upgrade all dependencies to their latest versions
+3. Restart any affected MCP server instances
+
+### Manual Update
+
+<details>
+<summary>Click to expand manual update steps</summary>
+
+```bash
+# Navigate to installation directory
+cd ~/mcp-creator-growth  # or your custom installation path
+
+# Pull latest changes
+git pull origin main
+
+# Update dependencies
+# Using uv
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
+uv pip install -e '.[dev]' --upgrade
+
+# Or using standard venv
+source venv/bin/activate           # macOS/Linux
+# venv\Scripts\activate            # Windows
+pip install -e '.[dev]' --upgrade
+```
+
+</details>
+
+---
+
 ## 🖼️ Screenshots
 
 ### Learning Session WebUI

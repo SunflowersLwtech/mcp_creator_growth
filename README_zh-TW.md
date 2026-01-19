@@ -305,6 +305,72 @@ claude mcp get mcp-creator-growth  # 檢查此伺服器狀態
 
 ---
 
+## 🔄 更新
+
+### 一鍵更新（推薦）
+
+如果你使用一鍵安裝腳本安裝，更新同樣簡單：
+
+<table>
+<tr>
+<th>平台</th>
+<th>命令</th>
+</tr>
+<tr>
+<td><b>macOS / Linux</b></td>
+<td>
+
+```bash
+~/mcp-creator-growth/scripts/update.sh
+```
+
+</td>
+</tr>
+<tr>
+<td><b>Windows (PowerShell)</b></td>
+<td>
+
+```powershell
+~\mcp-creator-growth\scripts\update.ps1
+```
+
+</td>
+</tr>
+</table>
+
+更新腳本會：
+1. 從倉庫拉取最新程式碼
+2. 升級所有依賴到最新版本
+3. 重啟受影響的 MCP 伺服器實例
+
+### 手動更新
+
+<details>
+<summary>點擊展開手動更新步驟</summary>
+
+```bash
+# 進入安裝目錄
+cd ~/mcp-creator-growth  # 或你的自訂安裝路徑
+
+# 拉取最新程式碼
+git pull origin main
+
+# 更新依賴
+# 使用 uv
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
+uv pip install -e '.[dev]' --upgrade
+
+# 或使用標準 venv
+source venv/bin/activate           # macOS/Linux
+# venv\Scripts\activate            # Windows
+pip install -e '.[dev]' --upgrade
+```
+
+</details>
+
+---
+
 ## 🖼️ 截圖
 
 ### 學習會話 WebUI

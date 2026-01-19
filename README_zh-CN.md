@@ -305,6 +305,72 @@ claude mcp get mcp-creator-growth  # 检查此服务器状态
 
 ---
 
+## 🔄 更新
+
+### 一键更新（推荐）
+
+如果你使用一键安装脚本安装，更新同样简单：
+
+<table>
+<tr>
+<th>平台</th>
+<th>命令</th>
+</tr>
+<tr>
+<td><b>macOS / Linux</b></td>
+<td>
+
+```bash
+~/mcp-creator-growth/scripts/update.sh
+```
+
+</td>
+</tr>
+<tr>
+<td><b>Windows (PowerShell)</b></td>
+<td>
+
+```powershell
+~\mcp-creator-growth\scripts\update.ps1
+```
+
+</td>
+</tr>
+</table>
+
+更新脚本会：
+1. 从仓库拉取最新代码
+2. 升级所有依赖到最新版本
+3. 重启受影响的 MCP 服务器实例
+
+### 手动更新
+
+<details>
+<summary>点击展开手动更新步骤</summary>
+
+```bash
+# 进入安装目录
+cd ~/mcp-creator-growth  # 或你的自定义安装路径
+
+# 拉取最新代码
+git pull origin main
+
+# 更新依赖
+# 使用 uv
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
+uv pip install -e '.[dev]' --upgrade
+
+# 或使用标准 venv
+source venv/bin/activate           # macOS/Linux
+# venv\Scripts\activate            # Windows
+pip install -e '.[dev]' --upgrade
+```
+
+</details>
+
+---
+
 ## 🖼️ 截图
 
 ### 学习会话 WebUI

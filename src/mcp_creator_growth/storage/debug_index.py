@@ -316,11 +316,14 @@ class DebugIndexManager:
         Returns:
             List of matching records
         """
-        matching_ids = [
-            r["id"] for r in self._index["records"]
-            if error_type.lower() in r.get("error_type", "").lower()
-        ]
-        return [self.get_record(rid) for rid in matching_ids if self.get_record(rid)]
+        matching_ids = []
+        for r in self._index["records"]:
+            # Check compact key 'et' first, fall back to 'error_type'
+            record_error_type = r.get("et") or r.get("error_type", "")
+            if error_type.lower() in record_error_type.lower():
+                matching_ids.append(r["id"])
+
+        return [record for rid in matching_ids if (record := self.get_record(rid))]
 
     def get_all_tags(self) -> list[str]:
         """Get all unique tags."""

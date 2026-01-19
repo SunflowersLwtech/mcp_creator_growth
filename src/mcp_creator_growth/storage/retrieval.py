@@ -12,6 +12,12 @@ from typing import Any
 from ..debug import server_debug_log as debug_log
 from .debug_index import DebugIndexManager
 
+# Common stop words to filter out during tokenization
+STOP_WORDS = {
+    "a", "an", "the", "is", "are", "was", "were", "be", "been",
+    "to", "of", "in", "for", "on", "with", "at", "by", "from",
+    "and", "or", "not", "no", "as", "it", "this", "that",
+}
 
 class DebugRetrieval:
     """
@@ -93,7 +99,14 @@ class DebugRetrieval:
             record = self.index_manager.get_record(record_id)
             if not record:
                 continue
-            score = self._calculate_relevance(record, query, error_type, tags)
+            # Pass pre-calculated query_terms to avoid re-tokenization
+            score = self._calculate_relevance(
+                record,
+                query,
+                error_type,
+                tags,
+                query_terms=query_terms
+            )
             if score > 0:
                 scored_records.append({
                     "record": record,
@@ -128,6 +141,7 @@ class DebugRetrieval:
         query: str,
         error_type: str | None = None,
         tags: list[str] | None = None,
+        query_terms: list[str] | None = None,
     ) -> float:
         """
         Calculate relevance score for a record.
@@ -143,13 +157,17 @@ class DebugRetrieval:
             query: Search query
             error_type: Optional error type filter
             tags: Optional tag filters
+            query_terms: Optional pre-calculated query terms
 
         Returns:
             Relevance score (0.0 to 1.0+)
         """
         score = 0.0
         query_lower = query.lower()
-        query_terms = self._tokenize(query_lower)
+
+        # Use provided query_terms or tokenize if not provided
+        if query_terms is None:
+            query_terms = self._tokenize(query_lower)
 
         # Error type filter (if specified, must match)
         if error_type:
@@ -209,13 +227,7 @@ class DebugRetrieval:
         terms = re.split(r'[^a-zA-Z0-9_]+', text)
 
         # Filter out short terms and common words
-        stop_words = {
-            "a", "an", "the", "is", "are", "was", "were", "be", "been",
-            "to", "of", "in", "for", "on", "with", "at", "by", "from",
-            "and", "or", "not", "no", "as", "it", "this", "that",
-        }
-
-        return [t for t in terms if len(t) > 2 and t not in stop_words]
+        return [t for t in terms if len(t) > 2 and t not in STOP_WORDS]
 
     def _count_term_matches(self, terms: list[str], text: str) -> int:
         """Count how many query terms appear in the text."""

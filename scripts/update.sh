@@ -102,16 +102,16 @@ fi
 
 case "$ENV_MANAGER" in
     "uv")
-        uv pip install -e ".[dev]" --quiet --upgrade
+        uv pip install -e '.[dev]' --quiet --upgrade
         ;;
     "conda")
         eval "$(conda shell.bash hook)"
         conda activate mcp-creator-growth
-        pip install -e ".[dev]" --quiet --upgrade
+        pip install -e '.[dev]' --quiet --upgrade
         conda deactivate
         ;;
     "venv")
-        ./venv/bin/pip install -e ".[dev]" --quiet --upgrade
+        ./venv/bin/pip install -e '.[dev]' --quiet --upgrade
         ;;
 esac
 

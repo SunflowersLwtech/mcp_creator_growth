@@ -3,80 +3,148 @@
 Thank you for your interest in contributing! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
+
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
 - [Making Changes](#making-changes)
-- [Submitting a Pull Request](#submitting-a-pull-request)
-- [Code Style](#code-style)
 - [Testing](#testing)
+- [Code Style](#code-style)
+- [Submitting a Pull Request](#submitting-a-pull-request)
 - [Project Structure](#project-structure)
+
+---
 
 ## Code of Conduct
 
 Please be respectful and constructive in all interactions. We welcome contributors of all experience levels.
 
+---
+
 ## Getting Started
 
 1. **Fork the repository** on GitHub
+
 2. **Clone your fork** locally:
    ```bash
    git clone https://github.com/YOUR_USERNAME/mcp_creator_growth.git
    cd mcp_creator_growth
    ```
+
 3. **Add upstream remote**:
    ```bash
    git remote add upstream https://github.com/SunflowersLwtech/mcp_creator_growth.git
    ```
 
+---
+
 ## Development Setup
 
 ### Prerequisites
-- Python 3.11 or higher
-- Git
 
-### Setup Steps
+| Requirement | Version |
+|-------------|---------|
+| Python | 3.11+ |
+| Git | Latest |
+| uv (recommended) | Latest |
 
-1. **Create a virtual environment**:
-   ```bash
-   python -m venv venv
+### Setup Options
 
-   # Windows
-   .\venv\Scripts\activate
+<details>
+<summary><b>Option 1: Using uv (Recommended)</b></summary>
 
-   # macOS/Linux
-   source venv/bin/activate
-   ```
+```bash
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-2. **Install in development mode**:
-   ```bash
-   pip install -e ".[dev]"
-   ```
+# Create virtual environment
+uv venv --python 3.11 .venv
 
-3. **Configure Claude Code** (for testing):
-   ```json
-   {
-     "mcpServers": {
-       "mcp-creator-growth": {
-         "command": "/path/to/venv/bin/python",
-         "args": ["-m", "mcp_creator_growth"],
-         "env": {
-           "MCP_DEBUG": "true"
-         }
-       }
-     }
-   }
-   ```
+# Activate environment
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
+
+# Install with dev dependencies
+uv pip install -e '.[dev]'
+```
+
+</details>
+
+<details>
+<summary><b>Option 2: Using standard venv</b></summary>
+
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate environment
+source venv/bin/activate           # macOS/Linux
+# venv\Scripts\activate            # Windows
+
+# Install with dev dependencies
+pip install -e '.[dev]'
+```
+
+</details>
+
+### Configure for Local Testing
+
+After setup, configure Claude Code to use your local development version:
+
+**Using CLI (recommended):**
+```bash
+# Add your local development server
+claude mcp add --scope local mcp-creator-growth-dev -- $(pwd)/.venv/bin/mcp-creator-growth
+
+# Or with debug logging enabled
+claude mcp add --scope local mcp-creator-growth-dev \
+  --env MCP_DEBUG=true \
+  -- $(pwd)/.venv/bin/mcp-creator-growth
+```
+
+**Using JSON configuration** (`~/.claude.json`):
+```json
+{
+  "mcpServers": {
+    "mcp-creator-growth-dev": {
+      "command": "/absolute/path/to/project/.venv/bin/mcp-creator-growth",
+      "args": [],
+      "env": {
+        "MCP_DEBUG": "true"
+      }
+    }
+  }
+}
+```
+
+### Verify Installation
+
+```bash
+# Check the server starts correctly
+python -c "import mcp_creator_growth; print(f'Version: {mcp_creator_growth.__version__}')"
+
+# Run linting
+ruff check src/
+
+# In Claude Code, verify with
+/mcp
+```
+
+---
 
 ## Making Changes
 
-### Branch Naming
-- `feature/description` - New features
-- `fix/description` - Bug fixes
-- `docs/description` - Documentation updates
-- `refactor/description` - Code refactoring
+### Branch Naming Convention
 
-### Workflow
+| Prefix | Use Case |
+|--------|----------|
+| `feature/` | New features |
+| `fix/` | Bug fixes |
+| `docs/` | Documentation updates |
+| `refactor/` | Code refactoring |
+| `test/` | Test additions/changes |
+
+### Development Workflow
 
 1. **Create a branch**:
    ```bash
@@ -86,7 +154,7 @@ Please be respectful and constructive in all interactions. We welcome contributo
 2. **Make your changes** and commit:
    ```bash
    git add .
-   git commit -m "Add: description of changes"
+   git commit -m "feat: add new feature description"
    ```
 
 3. **Keep your branch updated**:
@@ -97,45 +165,98 @@ Please be respectful and constructive in all interactions. We welcome contributo
 
 ### Commit Message Format
 
-Use clear, descriptive commit messages:
-- `Add: new feature description`
-- `Fix: bug description`
-- `Update: what was changed`
-- `Refactor: what was refactored`
-- `Docs: documentation changes`
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-## Submitting a Pull Request
+| Type | Description |
+|------|-------------|
+| `feat:` | New feature |
+| `fix:` | Bug fix |
+| `docs:` | Documentation changes |
+| `refactor:` | Code refactoring |
+| `test:` | Test additions/changes |
+| `chore:` | Build/tooling changes |
 
-1. **Push your branch**:
-   ```bash
-   git push origin feature/my-feature
-   ```
+**Examples:**
+```
+feat: add timeout parameter to learning_session
+fix: resolve WebSocket connection leak
+docs: update README with new configuration options
+refactor: simplify debug_search query logic
+```
 
-2. **Create a Pull Request** on GitHub
+---
 
-3. **Fill out the PR template** completely
+## Testing
 
-4. **Wait for review** - maintainers will review and provide feedback
+### Running Tests
 
-5. **Address feedback** - make requested changes and push updates
+```bash
+# Run all tests
+pytest -v
+
+# Run with verbose output
+pytest -v --tb=short
+
+# Run specific test file
+pytest tests/test_server.py -v
+
+# Run with coverage report
+pytest --cov=src/mcp_creator_growth --cov-report=html
+```
+
+### Writing Tests
+
+Tests should be placed in the `tests/` directory (create if needed):
+
+```python
+import pytest
+from mcp_creator_growth.server import mcp
+
+@pytest.mark.asyncio
+async def test_learning_session_defaults():
+    """Test learning_session with default parameters."""
+    # Your test implementation
+    pass
+
+@pytest.mark.asyncio
+async def test_debug_search_empty_results():
+    """Test debug_search when no matches found."""
+    # Your test implementation
+    pass
+```
+
+### Test Guidelines
+
+- Name test files `test_*.py`
+- Name test functions `test_*`
+- Use `pytest.mark.asyncio` for async tests
+- Use fixtures for common setup
+- Write descriptive docstrings
+
+---
 
 ## Code Style
 
-### Python Style
-- Follow PEP 8 guidelines
-- Use type hints for function parameters and return values
-- Keep functions focused and under 50 lines when possible
-- Write docstrings for public functions
+### Python Style Guidelines
 
-### Example
+| Rule | Description |
+|------|-------------|
+| Line length | Max 120 characters (configured in pyproject.toml) |
+| Type hints | Required for function parameters and returns |
+| Docstrings | Required for public functions |
+| Formatting | Follow PEP 8 |
+
+### Example Code Style
+
 ```python
+from typing import Any
+
 async def process_quiz_result(
     session_id: str,
     answers: list[str],
     score: int
 ) -> dict[str, Any]:
-    """
-    Process quiz results and update session.
+    """Process quiz results and update session.
 
     Args:
         session_id: Unique session identifier
@@ -149,80 +270,135 @@ async def process_quiz_result(
     pass
 ```
 
-### Formatting Tools
+### Linting and Formatting
+
 ```bash
-# Check style with ruff
-pip install ruff
+# Check for issues
 ruff check src/
 
 # Auto-fix issues
 ruff check src/ --fix
+
+# Check specific file
+ruff check src/mcp_creator_growth/server.py
 ```
 
-## Testing
+### Pre-commit Check
 
-### Running Tests
+Before committing, ensure:
 ```bash
-# Run all tests
-pytest dev/tests/ -v
+# Lint passes
+ruff check src/
 
-# Run specific phase
-pytest dev/tests/phase1/ -v
+# Tests pass (if available)
+pytest -v
 
-# Run with coverage
-pytest --cov=src/mcp_creator_growth dev/tests/
-
-# Run single test file
-pytest dev/tests/phase1/test_learning_session_class.py -v
+# Import works
+python -c "import mcp_creator_growth"
 ```
 
-### Writing Tests
-- Place tests in `dev/tests/` directory
-- Name test files `test_*.py`
-- Name test functions `test_*`
-- Use pytest fixtures for common setup
+---
 
-### Test Example
-```python
-import pytest
-from mcp_creator_growth.web.models.learning_session import LearningSession
+## Submitting a Pull Request
 
-@pytest.mark.asyncio
-async def test_session_creation():
-    session = LearningSession(
-        session_id="test-123",
-        summary="Test summary"
-    )
-    assert session.session_id == "test-123"
-    assert session.status == "pending"
-```
+### Before Submitting
+
+- [ ] Code follows style guidelines (`ruff check src/` passes)
+- [ ] Tests pass (if applicable)
+- [ ] Documentation updated if needed
+- [ ] Commit messages follow convention
+
+### PR Process
+
+1. **Push your branch**:
+   ```bash
+   git push origin feature/my-feature
+   ```
+
+2. **Create Pull Request** on GitHub
+
+3. **Fill out the PR template**:
+   - Summary of changes
+   - Related issue (if any)
+   - Type of change
+   - Testing performed
+
+4. **Wait for CI** - automated checks will run:
+   - Build verification (Python 3.11, 3.12 on Ubuntu/Windows/macOS)
+   - Lint check (ruff)
+
+5. **Address review feedback** - make requested changes and push updates
+
+---
 
 ## Project Structure
 
 ```
 mcp_creator_growth/
-├── src/mcp_creator_growth/    # Main source code
-│   ├── server.py              # MCP server and tools
-│   ├── config.py              # Configuration management
-│   ├── storage/               # Data persistence
-│   └── web/                   # Web UI components
-├── dev/
-│   ├── docs/                  # Documentation
-│   └── tests/                 # Test suites
-├── scripts/                   # Installation/update scripts
-└── pyproject.toml            # Project configuration
+├── src/mcp_creator_growth/     # Main source code
+│   ├── __init__.py             # Package init with version
+│   ├── __main__.py             # Entry point
+│   ├── server.py               # MCP server and tool definitions
+│   ├── config.py               # Configuration management
+│   ├── debug.py                # Debug logging utilities
+│   ├── storage/                # Data persistence layer
+│   │   ├── debug_index.py      # Debug experience storage
+│   │   ├── retrieval.py        # RAG retrieval logic
+│   │   ├── terms_index.py      # Programming terms storage
+│   │   ├── path_resolver.py    # Storage path resolution
+│   │   ├── session_storage.py  # Learning session storage
+│   │   └── ...
+│   ├── web/                    # Web UI components
+│   │   ├── main.py             # FastAPI app and WebSocket
+│   │   ├── models/             # Data models
+│   │   ├── routes/             # HTTP routes
+│   │   └── websocket/          # WebSocket handlers
+│   └── utils/                  # Utility functions
+├── scripts/                    # Installation scripts
+│   ├── install.sh              # Unix installer
+│   ├── install.ps1             # Windows installer
+│   ├── update.sh               # Unix updater
+│   └── update.ps1              # Windows updater
+├── assets/                     # Images and static assets
+├── .github/                    # GitHub configuration
+│   ├── workflows/ci.yml        # CI pipeline
+│   ├── ISSUE_TEMPLATE/         # Issue templates
+│   └── pull_request_template.md
+├── pyproject.toml              # Project configuration
+├── README.md                   # English documentation
+├── README_zh-CN.md             # Simplified Chinese docs
+├── README_zh-TW.md             # Traditional Chinese docs
+└── CONTRIBUTING.md             # This file
 ```
 
 ### Key Files
-- `server.py` - MCP tool definitions (learning_session, debug_search, etc.)
-- `web/models/learning_session.py` - Core blocking mechanism
-- `storage/path_resolver.py` - Data storage path logic
-- `config.py` - TOML configuration handling
+
+| File | Purpose |
+|------|---------|
+| `server.py` | MCP tool definitions (`learning_session`, `debug_search`, `debug_record`, `term_get`, `get_system_info`) |
+| `web/main.py` | FastAPI WebUI server with WebSocket support |
+| `storage/debug_index.py` | Debug experience indexing and storage |
+| `storage/retrieval.py` | RAG-based search for debug experiences |
+| `storage/terms_index.py` | Programming terminology database |
+| `config.py` | TOML configuration handling |
+
+### Data Storage
+
+All user data is stored locally in `.mcp-sidecar/`:
+```
+.mcp-sidecar/
+├── debug/              # Debug experiences (JSON)
+├── learning/           # Learning session history
+├── terms/              # Shown terms tracking
+└── config.toml         # User configuration
+```
+
+---
 
 ## Questions?
 
-- Open an [Issue](https://github.com/SunflowersLwtech/mcp_creator_growth/issues) for questions
-- Check existing issues before creating new ones
-- Provide as much context as possible
+- **Issues**: Open an [Issue](https://github.com/SunflowersLwtech/mcp_creator_growth/issues)
+- **Discussions**: Check existing issues before creating new ones
+- **Context**: Provide as much detail as possible
 
 Thank you for contributing!

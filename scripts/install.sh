@@ -142,16 +142,16 @@ echo "[4/4] Installing dependencies..."
 
 case "$ENV_MANAGER" in
     "uv")
-        uv pip install -e ".[dev]" --quiet
+        uv pip install -e '.[dev]' --quiet
         ;;
     "conda")
         eval "$(conda shell.bash hook)"
         conda activate mcp-creator-growth
-        pip install -e ".[dev]" --quiet
+        pip install -e '.[dev]' --quiet
         conda deactivate
         ;;
     "venv")
-        ./venv/bin/pip install -e ".[dev]" --quiet
+        ./venv/bin/pip install -e '.[dev]' --quiet
         ;;
 esac
 

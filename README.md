@@ -1,119 +1,224 @@
-# <img src="assets/icon.png" width="48" height="48" align="top" style="margin-right: 10px;"> MCP Creator Growth [Visit Website](https://github.com/SunflowersLwtech/mcp_creator_growth)
+# <img src="assets/icon.png" width="48" height="48" align="top" style="margin-right: 10px;"> MCP Creator Growth
 
 [English](README.md) | [简体中文](README_zh-CN.md) | [繁體中文](README_zh-TW.md)
 
-A context-aware learning assistant for AI coding that helps developers **learn from AI-generated code changes** through interactive quizzes and debug experience tracking.
+A context-aware **Model Context Protocol (MCP)** server that acts as a learning sidecar for AI coding assistants. It helps developers **learn from AI-generated code changes** through interactive quizzes and provides agents with a persistent **project-specific debugging memory**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![MCP Standard](https://img.shields.io/badge/MCP-Standard-green.svg)](https://modelcontextprotocol.io/)
+[![Glama MCP](https://img.shields.io/badge/Glama-MCP%20Server-blue)](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-Documentation-purple)](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth)
 
-## Design Philosophy
+---
 
-> **Learning is for the User. Debug is for the Agent.**
+## 🌐 Resources
 
-This project follows two core principles:
+| Resource | Description |
+|----------|-------------|
+| [**Glama MCP Marketplace**](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth) | Official MCP server listing with installation guides |
+| [**DeepWiki Documentation**](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth) | AI-generated deep analysis of the codebase |
+| [**GitHub Repository**](https://github.com/SunflowersLwtech/mcp_creator_growth) | Source code, issues, and contributions |
 
-| Component | Purpose | Beneficiary |
-|-----------|---------|-------------|
-| `learning_session` | Help users understand AI-generated changes | **User** |
-| `debug_search/record` | Build project-specific knowledge base | **Agent** |
+---
 
-### Low Intrusion, High Value
+## 🚀 Why Use This?
 
-- **Minimal context pollution**: Return values are deliberately compact to reduce token usage
-- **Progressive disclosure**: Debug search returns summaries first, not full records
-- **Inverted index**: Fast keyword-based lookups without loading all records
-- **Local-first**: All data stored in `.mcp-sidecar/` - your data stays yours
+| For | Benefit |
+|-----|---------|
+| **Developers** | Don't just accept AI code—understand it. Request a quiz to verify your grasp of the logic, security, or performance implications. |
+| **AI Agents** | Stop solving the same bug twice. The server quietly records debugging solutions and retrieves them automatically when similar errors occur. |
 
-## Features
+---
 
-- **Blocking Learning Sessions** - Agent pauses until you complete the learning card
-- **Interactive Quizzes** - Verify your understanding with targeted questions
-- **5-Why Reasoning** - Understand the "why" behind code decisions
-- **Debug Experience RAG** - Search and record debugging solutions for reuse
-- **Token-Efficient** - Returns minimal data to reduce context pollution
-- **Optimized Indexing** - Inverted index for fast keyword searches
+## 📦 Available Tools
 
-## Quick Start
+| Tool | Type | Description |
+|------|------|-------------|
+| `learning_session` | 🎓 Interactive | Opens a WebUI quiz based on recent code changes. **Blocks** until user completes learning. |
+| `debug_search` | 🔍 Silent RAG | Searches project debug history for relevant past solutions. Auto-triggered on errors. |
+| `debug_record` | 📝 Silent | Records debugging experiences to project knowledge base. Auto-triggered after fixes. |
+| `term_get` | 📚 Reference | Fetches programming terms/concepts. Tracks shown terms to avoid repetition. |
+| `get_system_info` | ℹ️ Utility | Returns system environment information (platform, Python version, etc.). |
 
-### One-Line Installation
+### Tool Details
 
-**macOS / Linux:**
+<details>
+<summary><b>🎓 learning_session</b> - Interactive Learning Card</summary>
+
+**Trigger**: User explicitly requests (e.g., "Quiz me", "Test my understanding")
+
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `project_directory` | string | `"."` | Project directory path |
+| `summary` | string | — | Structured summary of Agent's actions |
+| `reasoning` | object | null | 5-Why reasoning (goal, trigger, mechanism, alternatives, risks) |
+| `quizzes` | array | auto-generated | 3 quiz questions with options, answer, explanation |
+| `focus_areas` | array | `["logic"]` | Focus areas: logic, security, performance, architecture, syntax |
+| `timeout` | int | 600 | Timeout in seconds (60-7200) |
+
+**Returns**: `{"status": "completed", "action": "HALT_GENERATION"}`
+
+</details>
+
+<details>
+<summary><b>🔍 debug_search</b> - Search Debug History</summary>
+
+**Trigger**: Auto-called when encountering errors (silent, no UI)
+
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `query` | string | — | Error message or description to search |
+| `project_directory` | string | `"."` | Project directory path |
+| `error_type` | string | null | Filter by error type (e.g., ImportError) |
+| `tags` | array | null | Filter by tags |
+| `limit` | int | 5 | Maximum results (1-20) |
+
+**Returns**: `{"results": [...], "count": N}`
+
+</details>
+
+<details>
+<summary><b>📝 debug_record</b> - Record Debug Experience</summary>
+
+**Trigger**: Auto-called after fixing bugs (silent, background)
+
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `context` | object | — | Error context: `{error_type, error_message, file, line}` |
+| `cause` | string | — | Root cause analysis |
+| `solution` | string | — | Solution that worked |
+| `project_directory` | string | `"."` | Project directory path |
+| `tags` | array | null | Tags for categorization |
+
+**Returns**: `{"ok": true, "id": "..."}`
+
+</details>
+
+<details>
+<summary><b>📚 term_get</b> - Get Programming Terms</summary>
+
+**Available Domains**: programming_basics, data_structures, algorithms, software_design, web_development, version_control, testing, security, databases, devops
+
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `project_directory` | string | `"."` | Project directory path |
+| `count` | int | 3 | Number of terms (1-5) |
+| `domain` | string | null | Filter by domain |
+
+**Returns**: `{"terms": [...], "count": N, "remaining": N}`
+
+</details>
+
+---
+
+## 🛠️ Installation
+
+### One-Line Install (Recommended)
+
+<table>
+<tr>
+<th>Platform</th>
+<th>Command</th>
+</tr>
+<tr>
+<td><b>macOS / Linux</b></td>
+<td>
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.sh | bash
 ```
 
-**Windows (PowerShell):**
+</td>
+</tr>
+<tr>
+<td><b>Windows (PowerShell)</b></td>
+<td>
+
 ```powershell
 irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.ps1 | iex
 ```
 
+</td>
+</tr>
+</table>
+
 The installer will:
-1. Auto-detect your environment (uv / conda / system Python)
-2. Install Python 3.11+ via uv if needed
-3. Create a virtual environment
-4. Install all dependencies
-5. Display the configuration command for your IDE
+1. Auto-detect your Python environment (uv → conda → venv)
+2. Clone the repository to `~/mcp-creator-growth`
+3. Create virtual environment and install dependencies
+4. Print the exact command to configure your IDE
 
 ### Manual Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
-   cd mcp_creator_growth
-   ```
+<details>
+<summary>Click to expand manual installation steps</summary>
 
-2. **Create virtual environment:**
-   ```bash
-   # Using uv (recommended)
-   uv venv --python 3.11 .venv
-   source .venv/bin/activate  # or .venv\Scripts\activate on Windows
-   uv pip install -e ".[dev]"
+**Prerequisites**: Python 3.11+ or [uv](https://docs.astral.sh/uv/)
 
-   # Or using standard venv
-   python -m venv venv
-   source venv/bin/activate  # or venv\Scripts\activate on Windows
-   pip install -e ".[dev]"
-   ```
+```bash
+# 1. Clone the repository
+git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
+cd mcp_creator_growth
 
-## IDE Configuration
+# 2. Create virtual environment and install
+# Using uv (recommended)
+uv venv --python 3.11 .venv
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
+uv pip install -e '.[dev]'
+
+# Or using standard venv
+python -m venv venv
+source venv/bin/activate           # macOS/Linux
+# venv\Scripts\activate            # Windows
+pip install -e '.[dev]'
+```
+
+</details>
+
+---
+
+## ⚙️ IDE Configuration
+
+### Claude Code (CLI) — One Command Setup
 
 After installation, configure your AI coding IDE to use this MCP server.
 
 ### Claude Code
 
-**Option 1: Use the command from install script (Recommended)**
-
-The install script outputs the exact command for your environment. Copy and run it directly:
-
-```
-For Claude Code (one command):
-  claude mcp add mcp-creator-growth -- "<your-actual-path>"
-```
-
-**Option 2: Find the path manually**
-
-If you didn't save the install output, find your executable path:
-
-| Install Method | Executable Path |
-|---------------|-----------------|
-| uv (default) | `~/mcp-creator-growth/.venv/bin/mcp-creator-growth` (Unix) or `.venv\Scripts\mcp-creator-growth.exe` (Windows) |
-| conda | `<conda-path>/envs/mcp-creator-growth/bin/mcp-creator-growth` (Unix) or `Scripts\mcp-creator-growth.exe` (Windows) |
-| venv | `~/mcp-creator-growth/venv/bin/mcp-creator-growth` (Unix) or `venv\Scripts\mcp-creator-growth.exe` (Windows) |
-
-Then run:
+**Option 1: CLI (Recommended)**
 ```bash
-claude mcp add mcp-creator-growth -- "<your-executable-path>"
+# macOS / Linux
+claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
+
+# Windows
+claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
 ```
 
-**Option 3: Config File**
+**Option 2: Config File**
 
-Add to `~/.claude.json` (replace `<path>` with your actual executable path):
+Add to `~/.claude.json`:
 ```json
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "<path-to-mcp-creator-growth-executable>"
+      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+    }
+  }
+}
+```
+
+For Windows:
+```json
+{
+  "mcpServers": {
+    "mcp-creator-growth": {
+      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
     }
   }
 }
@@ -131,7 +236,16 @@ Add to Cursor MCP settings (Settings → MCP → Add Server):
 ```json
 {
   "mcp-creator-growth": {
-    "command": "<path-to-mcp-creator-growth-executable>"
+    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+  }
+}
+```
+
+For Windows:
+```json
+{
+  "mcp-creator-growth": {
+    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
   }
 }
 ```
@@ -144,7 +258,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "<path-to-mcp-creator-growth-executable>"
+      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
     }
   }
 }
@@ -153,7 +267,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 ### Other IDEs
 
 For any MCP-compatible IDE, use these settings:
-- **Command:** Use the executable path from the install script output (see table above)
+- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (or `.venv\Scripts\mcp-creator-growth.exe` on Windows)
 - **Transport:** stdio
 
 **After configuration, restart your IDE.**
@@ -194,86 +308,113 @@ The debug tools work silently in the background:
 ~/mcp-creator-growth/scripts/update.sh
 ```
 
-**Windows:**
+</td>
+</tr>
+<tr>
+<td><b>Windows (PowerShell)</b></td>
+<td>
+
 ```powershell
 ~\mcp-creator-growth\scripts\update.ps1
 ```
 
-Then restart your IDE.
+</td>
+</tr>
+</table>
 
-## Configuration
+The update script will:
+1. Pull the latest changes from the repository
+2. Upgrade all dependencies to their latest versions
+3. Restart any affected MCP server instances
 
-Create `~/.config/mcp-sidecar/config.toml` (Unix) or `%APPDATA%/mcp-sidecar/config.toml` (Windows):
+### Manual Update
 
-```toml
-[server]
-host = "127.0.0.1"
-port = 0  # Auto-select
-
-[storage]
-use_global = false  # true = share across projects
-
-[ui]
-theme = "auto"  # auto, dark, light
-language = "en"  # en, zh-CN
-
-[session]
-default_timeout = 600  # 10 minutes
-```
-
-## Data Storage
-
-All data is stored locally in `.mcp-sidecar/`:
-
-```
-.mcp-sidecar/
-├── meta.json              # Project metadata
-├── debug/
-│   ├── index.json         # Optimized index with inverted lookups
-│   └── *.json             # Individual debug records
-├── sessions/
-│   └── *.json             # Learning session history
-└── terms/
-    └── shown.json         # Shown terms tracking
-```
-
-**Storage locations:**
-- **Project-level:** `{project}/.mcp-sidecar/` (tracked with git if you want)
-- **Global:** `~/.config/mcp-sidecar/` (personal, never tracked)
-
-**Index optimization:**
-- Inverted index for keywords, tags, and error types
-- Compact record entries to reduce file size
-- Lazy loading - only fetches full records when needed
-
-## Development
+<details>
+<summary>Click to expand manual update steps</summary>
 
 ```bash
-# Run tests
-pytest dev/tests/ -v
+# Navigate to installation directory
+cd ~/mcp-creator-growth  # or your custom installation path
 
-# Run specific phase
-pytest dev/tests/phase1/ -v
+# Pull latest changes
+git pull origin main
 
-# Run with coverage
-pytest --cov=src/mcp_creator_growth dev/tests/
+# Update dependencies
+# Using uv
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
+uv pip install -e '.[dev]' --upgrade
+
+# Or using standard venv
+source venv/bin/activate           # macOS/Linux
+# venv\Scripts\activate            # Windows
+pip install -e '.[dev]' --upgrade
 ```
 
-## Contributing
+</details>
 
-Contributions are welcome! Please:
+---
+
+## 🖼️ Screenshots
+
+### Learning Session WebUI
+
+![WebUI Preview](assets/webui.png)
+
+---
+
+## 🔒 Security & Privacy
+
+| Aspect | Details |
+|--------|---------|
+| **Local First** | All data stored in `.mcp-sidecar/` directory within your project |
+| **No Telemetry** | Zero data sent to external servers |
+| **Full Control** | Delete `.mcp-sidecar/` anytime to reset all data |
+
+---
+
+## 🔧 Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MCP_DEBUG` | `false` | Enable debug logging (`true`, `1`, `yes`, `on`) |
+| `MCP_TIMEOUT` | `120000` | MCP server startup timeout in ms |
+| `MAX_MCP_OUTPUT_TOKENS` | `25000` | Maximum tokens for MCP output |
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Install dev dependencies: `uv pip install -e '.[dev]'`
+4. Make changes and run tests: `pytest`
+5. Submit a Pull Request
 
-## License
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
-MIT License - see [LICENSE](LICENSE) for details.
+---
 
-## Acknowledgments
+## 📬 Contact
 
-- Built with [FastMCP](https://github.com/jlowin/fastmcp)
-- Inspired by the need for meaningful AI-assisted learning
+| Channel | Address |
+|---------|---------|
+| **Email** | sunflowers0607@outlook.com |
+| **Email** | weiliu0607@gmail.com |
+| **GitHub Issues** | [Open an Issue](https://github.com/SunflowersLwtech/mcp_creator_growth/issues) |
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+<p align="center">
+  Built with <a href="https://github.com/jlowin/fastmcp">FastMCP</a> •
+  <a href="https://modelcontextprotocol.io">MCP Standard</a> •
+  <a href="https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth">Glama MCP</a>
+</p>

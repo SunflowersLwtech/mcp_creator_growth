@@ -1,74 +1,176 @@
-# <img src="assets/icon.png" width="48" height="48" align="top" style="margin-right: 10px;"> MCP Creator Growth [訪問官網](https://github.com/SunflowersLwtech/mcp_creator_growth)
-
-一個具備上下文感知能力的 AI 編程助手學習側邊欄，通過互動測驗和調試經驗追蹤，幫助開發者**從 AI 生成的代碼變更中學習**。
+# <img src="assets/icon.png" width="48" height="48" align="top" style="margin-right: 10px;"> MCP Creator Growth
 
 [English](README.md) | [简体中文](README_zh-CN.md) | [繁體中文](README_zh-TW.md)
 
+一個具備上下文感知能力的 **Model Context Protocol (MCP)** 伺服器，作為 AI 編程助手的「學習側邊欄」。它通過互動測驗幫助開發者**從 AI 生成的程式碼變更中學習**，並為智能體提供持久化的**專案級除錯記憶**。
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![MCP Standard](https://img.shields.io/badge/MCP-Standard-green.svg)](https://modelcontextprotocol.io/)
+[![Glama MCP](https://img.shields.io/badge/Glama-MCP%20Server-blue)](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-文檔-purple)](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth)
 
-## 設計理念
+---
 
-> **學習是為了用戶。調試是為了智能體 (Agent)。**
+## 🌐 資源連結
 
-本項目遵循兩個核心原則：
+| 資源 | 描述 |
+|------|------|
+| [**Glama MCP 市場**](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth) | 官方 MCP 伺服器列表，含安裝指南 |
+| [**DeepWiki 文檔**](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth) | AI 生成的程式碼庫深度解析 |
+| [**GitHub 倉庫**](https://github.com/SunflowersLwtech/mcp_creator_growth) | 原始碼、Issue 和貢獻 |
 
-| 組件 | 用途 | 受益方 |
-|-----------|---------|-------------|
-| `learning_session` | 幫助用戶理解 AI 生成的變更 | **用戶** |
-| `debug_search/record` | 構建項目特定的知識庫 | **智能體** |
+---
 
-### 低干擾，高價值
+## 🚀 為什麼使用它？
 
-- **極小的上下文污染**：返回值刻意保持緊湊，以減少 Token 使用
-- **漸進式披露**：調試搜索首先返回摘要，而不是完整記錄
-- **倒排索引**：基於關鍵字的快速查找，無需加載所有記錄
-- **本地優先**：所有數據存儲在 `.mcp-sidecar/` 中 - 你的數據屬於你自己
+| 角色 | 收益 |
+|------|------|
+| **開發者** | 不要只接受 AI 的程式碼——要理解它。請求測驗來驗證你對邏輯、安全性或效能影響的理解。 |
+| **AI 智能體** | 不再重複解決同一個 Bug。伺服器會靜默記錄除錯方案，並在遇到類似錯誤時自動檢索。 |
 
-## 功能特性
+---
 
-- **阻塞式學習會話** - Agent 會暫停，直到你完成學習卡片
-- **互動測驗** - 通過針對性問題驗證你的理解
-- **5-Why 溯源** - 理解代碼決策背後的「為什麼」
-- **調試經驗 RAG** - 搜索並記錄調試解決方案以供複用
-- **Token 高效** - 返回最少的數據以減少上下文污染
-- **優化的索引** - 用於快速關鍵字搜索的倒排索引
+## 📦 可用工具
 
-## 快速開始
+| 工具 | 類型 | 描述 |
+|------|------|------|
+| `learning_session` | 🎓 互動式 | 開啟 WebUI 測驗介面，基於最近的程式碼變更生成題目。**阻塞**直到使用者完成學習。 |
+| `debug_search` | 🔍 靜默 RAG | 搜尋專案除錯歷史，查找相關的歷史解決方案。遇到錯誤時自動觸發。 |
+| `debug_record` | 📝 靜默 | 將除錯經驗記錄到專案知識庫。修復 Bug 後自動觸發。 |
+| `term_get` | 📚 參考 | 獲取程式設計術語和概念。追蹤已展示的術語以避免重複。 |
+| `get_system_info` | ℹ️ 工具 | 回傳系統環境資訊（平台、Python 版本等）。 |
 
-### 一鍵安裝
+### 工具詳情
 
-**macOS / Linux:**
+<details>
+<summary><b>🎓 learning_session</b> - 互動學習卡片</summary>
+
+**觸發條件**: 使用者顯式請求（例如：「考考我」、「測試我的理解」）
+
+**參數**:
+| 參數 | 類型 | 預設值 | 描述 |
+|------|------|--------|------|
+| `project_directory` | string | `"."` | 專案目錄路徑 |
+| `summary` | string | — | Agent 操作的結構化摘要 |
+| `reasoning` | object | null | 5-Why 推理（目標、觸發、機制、替代方案、風險） |
+| `quizzes` | array | 自動生成 | 3 道測驗題，包含選項、答案、解釋 |
+| `focus_areas` | array | `["logic"]` | 重點領域：logic、security、performance、architecture、syntax |
+| `timeout` | int | 600 | 逾時時間（秒，60-7200） |
+
+**回傳**: `{"status": "completed", "action": "HALT_GENERATION"}`
+
+</details>
+
+<details>
+<summary><b>🔍 debug_search</b> - 搜尋除錯歷史</summary>
+
+**觸發條件**: 遇到錯誤時自動呼叫（靜默，無 UI）
+
+**參數**:
+| 參數 | 類型 | 預設值 | 描述 |
+|------|------|--------|------|
+| `query` | string | — | 要搜尋的錯誤訊息或描述 |
+| `project_directory` | string | `"."` | 專案目錄路徑 |
+| `error_type` | string | null | 按錯誤類型過濾（如 ImportError） |
+| `tags` | array | null | 按標籤過濾 |
+| `limit` | int | 5 | 最大結果數（1-20） |
+
+**回傳**: `{"results": [...], "count": N}`
+
+</details>
+
+<details>
+<summary><b>📝 debug_record</b> - 記錄除錯經驗</summary>
+
+**觸發條件**: 修復 Bug 後自動呼叫（靜默，背景執行）
+
+**參數**:
+| 參數 | 類型 | 預設值 | 描述 |
+|------|------|--------|------|
+| `context` | object | — | 錯誤上下文：`{error_type, error_message, file, line}` |
+| `cause` | string | — | 根因分析 |
+| `solution` | string | — | 有效的解決方案 |
+| `project_directory` | string | `"."` | 專案目錄路徑 |
+| `tags` | array | null | 分類標籤 |
+
+**回傳**: `{"ok": true, "id": "..."}`
+
+</details>
+
+<details>
+<summary><b>📚 term_get</b> - 獲取程式設計術語</summary>
+
+**可用領域**: programming_basics、data_structures、algorithms、software_design、web_development、version_control、testing、security、databases、devops
+
+**參數**:
+| 參數 | 類型 | 預設值 | 描述 |
+|------|------|--------|------|
+| `project_directory` | string | `"."` | 專案目錄路徑 |
+| `count` | int | 3 | 術語數量（1-5） |
+| `domain` | string | null | 按領域過濾 |
+
+**回傳**: `{"terms": [...], "count": N, "remaining": N}`
+
+</details>
+
+---
+
+## 🛠️ 安裝
+
+### 一鍵安裝（推薦）
+
+<table>
+<tr>
+<th>平台</th>
+<th>命令</th>
+</tr>
+<tr>
+<td><b>macOS / Linux</b></td>
+<td>
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.sh | bash
 ```
 
-**Windows (PowerShell):**
+</td>
+</tr>
+<tr>
+<td><b>Windows (PowerShell)</b></td>
+<td>
+
 ```powershell
 irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/install.ps1 | iex
 ```
 
-安裝程序將：
-1. 自動檢測你的環境 (uv / conda / 系統 Python)
-2. 如果需要，通過 uv 安裝 Python 3.11+
-3. 創建虛擬環境
-4. 安裝所有依賴項
-5. 顯示你的 IDE 配置命令
+</td>
+</tr>
+</table>
+
+安裝腳本會：
+1. 自動檢測 Python 環境（uv → conda → venv）
+2. 克隆倉庫到 `~/mcp-creator-growth`
+3. 建立虛擬環境並安裝依賴
+4. 輸出配置 IDE 所需的確切命令
 
 ### 手動安裝
 
-1. **克隆倉庫：**
-   ```bash
-   git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
-   cd mcp_creator_growth
-   ```
+<details>
+<summary>點擊展開手動安裝步驟</summary>
 
-2. **創建虛擬環境：**
-   ```bash
-   # 使用 uv (推薦)
-   uv venv --python 3.11 .venv
-   source .venv/bin/activate  # 或在 Windows 上使用 .venv\Scripts\activate
-   uv pip install -e ".[dev]"
+**前置條件**: Python 3.11+ 或 [uv](https://docs.astral.sh/uv/)
+
+```bash
+# 1. 克隆倉庫
+git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
+cd mcp_creator_growth
+
+# 2. 建立虛擬環境並安裝
+# 使用 uv（推薦）
+uv venv --python 3.11 .venv
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
+uv pip install -e '.[dev]'
 
    # 或者使用標準 venv
    python -m venv venv
@@ -82,38 +184,34 @@ irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/s
 
 ### Claude Code
 
-**選項 1：使用安裝腳本輸出的命令（推薦）**
-
-安裝腳本會輸出適合你環境的確切命令。直接複製並運行：
-
-```
-For Claude Code (one command):
-  claude mcp add mcp-creator-growth -- "<你的實際路徑>"
-```
-
-**選項 2：手動查找路徑**
-
-如果你沒有保存安裝輸出，根據安裝方式查找可執行文件路徑：
-
-| 安裝方式 | 可執行文件路徑 |
-|---------|---------------|
-| uv (預設) | `~/mcp-creator-growth/.venv/bin/mcp-creator-growth` (Unix) 或 `.venv\Scripts\mcp-creator-growth.exe` (Windows) |
-| conda | `<conda路徑>/envs/mcp-creator-growth/bin/mcp-creator-growth` (Unix) 或 `Scripts\mcp-creator-growth.exe` (Windows) |
-| venv | `~/mcp-creator-growth/venv/bin/mcp-creator-growth` (Unix) 或 `venv\Scripts\mcp-creator-growth.exe` (Windows) |
-
-然後運行：
+**選項 1：CLI (推薦)**
 ```bash
-claude mcp add mcp-creator-growth -- "<你的可執行文件路徑>"
+# macOS / Linux
+claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
+
+# Windows
+claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
 ```
 
-**選項 3：配置文件**
+**選項 2：配置文件**
 
-添加到 `~/.claude.json`（將 `<路徑>` 替換為你的實際可執行文件路徑）：
+添加到 `~/.claude.json`：
 ```json
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "<mcp-creator-growth可執行文件路徑>"
+      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+    }
+  }
+}
+```
+
+Windows 用戶：
+```json
+{
+  "mcpServers": {
+    "mcp-creator-growth": {
+      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
     }
   }
 }
@@ -131,7 +229,16 @@ claude mcp add mcp-creator-growth -- "<你的可執行文件路徑>"
 ```json
 {
   "mcp-creator-growth": {
-    "command": "<mcp-creator-growth可執行文件路徑>"
+    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+  }
+}
+```
+
+Windows 用戶：
+```json
+{
+  "mcp-creator-growth": {
+    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
   }
 }
 ```
@@ -144,7 +251,7 @@ claude mcp add mcp-creator-growth -- "<你的可執行文件路徑>"
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "<mcp-creator-growth可執行文件路徑>"
+      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
     }
   }
 }
@@ -153,7 +260,7 @@ claude mcp add mcp-creator-growth -- "<你的可執行文件路徑>"
 ### 其他 IDE
 
 對於任何兼容 MCP 的 IDE，使用這些設置：
-- **Command:** 使用安裝腳本輸出的可執行文件路徑（見上表）
+- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (或 Windows 上的 `.venv\Scripts\mcp-creator-growth.exe`)
 - **Transport:** stdio
 
 **配置完成後，重啟你的 IDE。**
@@ -194,86 +301,113 @@ Agent 將創建一個互動學習卡片並**等待**直到你完成它。
 ~/mcp-creator-growth/scripts/update.sh
 ```
 
-**Windows:**
+</td>
+</tr>
+<tr>
+<td><b>Windows (PowerShell)</b></td>
+<td>
+
 ```powershell
 ~\mcp-creator-growth\scripts\update.ps1
 ```
 
-然後重啟你的 IDE。
+</td>
+</tr>
+</table>
 
-## 配置
+更新腳本會：
+1. 從倉庫拉取最新程式碼
+2. 升級所有依賴到最新版本
+3. 重啟受影響的 MCP 伺服器實例
 
-創建 `~/.config/mcp-sidecar/config.toml` (Unix) 或 `%APPDATA%/mcp-sidecar/config.toml` (Windows)：
+### 手動更新
 
-```toml
-[server]
-host = "127.0.0.1"
-port = 0  # 自動選擇
-
-[storage]
-use_global = false  # true = 跨項目共享
-
-[ui]
-theme = "auto"  # auto, dark, light
-language = "en"  # en, zh-CN
-
-[session]
-default_timeout = 600  # 10 分鐘
-```
-
-## 數據存儲
-
-所有數據都存儲在本地的 `.mcp-sidecar/` 目錄中：
-
-```
-.mcp-sidecar/
-├── meta.json              # 項目元數據
-├── debug/
-│   ├── index.json         # 帶倒排查找的優化索引
-│   └── *.json             # 單個調試記錄
-├── sessions/
-│   └── *.json             # 學習會話歷史
-└── terms/
-    └── shown.json         # 已展示術語追蹤
-```
-
-**存儲位置：**
-- **項目級：** `{project}/.mcp-sidecar/` (如果需要可以用 git 追蹤)
-- **全局級：** `~/.config/mcp-sidecar/` (個人數據，永不追蹤)
-
-**索引優化：**
-- 針對關鍵字、標籤和錯誤類型的倒排索引
-- 緊湊的記錄條目以減小文件大小
-- 懶加載 - 僅在需要時獲取完整記錄
-
-## 開發
+<details>
+<summary>點擊展開手動更新步驟</summary>
 
 ```bash
-# 運行測試
-pytest dev/tests/ -v
+# 進入安裝目錄
+cd ~/mcp-creator-growth  # 或你的自訂安裝路徑
 
-# 運行特定階段
-pytest dev/tests/phase1/ -v
+# 拉取最新程式碼
+git pull origin main
 
-# 運行帶覆蓋率的測試
-pytest --cov=src/mcp_creator_growth dev/tests/
+# 更新依賴
+# 使用 uv
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
+uv pip install -e '.[dev]' --upgrade
+
+# 或使用標準 venv
+source venv/bin/activate           # macOS/Linux
+# venv\Scripts\activate            # Windows
+pip install -e '.[dev]' --upgrade
 ```
 
-## 貢獻
+</details>
 
-歡迎貢獻！請：
+---
+
+## 🖼️ 截圖
+
+### 學習會話 WebUI
+
+![WebUI 預覽](assets/webui-TW.png)
+
+---
+
+## 🔒 安全與隱私
+
+| 方面 | 詳情 |
+|------|------|
+| **本地優先** | 所有資料存儲在專案內的 `.mcp-sidecar/` 目錄 |
+| **無遙測** | 不向外部伺服器發送任何資料 |
+| **完全掌控** | 隨時刪除 `.mcp-sidecar/` 即可重置所有資料 |
+
+---
+
+## 🔧 環境變數
+
+| 變數 | 預設值 | 描述 |
+|------|--------|------|
+| `MCP_DEBUG` | `false` | 啟用除錯日誌（`true`、`1`、`yes`、`on`） |
+| `MCP_TIMEOUT` | `120000` | MCP 伺服器啟動逾時時間（毫秒） |
+| `MAX_MCP_OUTPUT_TOKENS` | `25000` | MCP 輸出的最大 token 數 |
+
+---
+
+## 🤝 貢獻
+
+我們歡迎貢獻！請遵循以下步驟：
 
 1. Fork 本倉庫
-2. 創建特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交你的變更 (`git commit -m 'Add amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 開啟 Pull Request
+2. 建立特性分支：`git checkout -b feature/amazing-feature`
+3. 安裝開發依賴：`uv pip install -e '.[dev]'`
+4. 進行更改並執行測試：`pytest`
+5. 提交 Pull Request
 
-## 許可證
+詳細指南請參閱 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-MIT License - 詳情見 [LICENSE](LICENSE)。
+---
 
-## 致謝
+## 📬 聯繫方式
 
-- 基於 [FastMCP](https://github.com/jlowin/fastmcp) 構建
-- 靈感來自於對有意義的 AI 輔助學習的需求
+| 渠道 | 地址 |
+|------|------|
+| **郵箱** | sunflowers0607@outlook.com |
+| **郵箱** | weiliu0607@gmail.com |
+| **GitHub Issues** | [提交 Issue](https://github.com/SunflowersLwtech/mcp_creator_growth/issues) |
+
+---
+
+## 📄 授權條款
+
+本專案基於 [MIT License](LICENSE) 授權。
+
+---
+
+<p align="center">
+  基於 <a href="https://github.com/jlowin/fastmcp">FastMCP</a> 建構 •
+  <a href="https://modelcontextprotocol.io">MCP 標準</a> •
+  <a href="https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth">Glama MCP</a>
+</p>

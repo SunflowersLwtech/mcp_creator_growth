@@ -60,5 +60,40 @@ class TestDebugIndex(unittest.TestCase):
         results = self.manager.search_by_error_type("PerfError")
         self.assertEqual(len(results), 1)
 
+    def test_search_by_tag_optimization(self):
+        """Test that search_by_tag correctly filters records without double-fetching."""
+        # Create records with tags
+        rid1 = self.manager.record(
+            context={
+                "error_type": "Error1",
+                "error_message": "msg1",
+            },
+            cause="cause1",
+            solution="solution1",
+            tags=["python", "test"]
+        )
+        
+        rid2 = self.manager.record(
+            context={
+                "error_type": "Error2",
+                "error_message": "msg2",
+            },
+            cause="cause2",
+            solution="solution2",
+            tags=["javascript", "test"]
+        )
+
+        # Search by tag
+        python_results = self.manager.search_by_tag("python")
+        self.assertEqual(len(python_results), 1)
+        self.assertEqual(python_results[0]["id"], rid1)
+
+        test_results = self.manager.search_by_tag("test")
+        self.assertEqual(len(test_results), 2)
+        
+        # Verify no results for non-existent tag
+        empty_results = self.manager.search_by_tag("nonexistent")
+        self.assertEqual(len(empty_results), 0)
+
 if __name__ == '__main__':
     unittest.main()

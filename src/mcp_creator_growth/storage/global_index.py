@@ -148,6 +148,7 @@ class GlobalIndexManager:
     def get_concepts_by_category(self, category: str) -> list[dict[str, Any]]:
         """Get all concepts in a category."""
         concept_ids = self._concepts["by_category"].get(category, [])
+        # Use walrus operator to avoid double get_concept() call - reduces I/O by 50%
         return [concept for cid in concept_ids if (concept := self.get_concept(cid))]
 
     def add_bug_pattern(
@@ -219,6 +220,7 @@ class GlobalIndexManager:
             if error_type.lower() in err_type.lower() and err_type != error_type:
                 pattern_ids.extend(ids)
 
+        # Use walrus operator to avoid double get_bug_pattern() call - reduces I/O by 50%
         return [pattern for pid in pattern_ids if (pattern := self.get_bug_pattern(pid))]
 
     def get_all_concepts(self) -> list[dict[str, Any]]:

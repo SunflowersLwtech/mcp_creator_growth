@@ -151,15 +151,15 @@ if ($ExePath -and (Test-FileLocked $ExePath)) {
     # Safe to update
     switch ($EnvManager) {
         "uv" {
-            uv pip install -e ".[dev]" --quiet --upgrade
+            uv pip install -e '.[dev]' --quiet --upgrade
         }
         "conda" {
             conda activate mcp-creator-growth
-            pip install -e ".[dev]" --quiet --upgrade
+            pip install -e '.[dev]' --quiet --upgrade
             conda deactivate
         }
         "venv" {
-            & ".\venv\Scripts\pip.exe" install -e ".[dev]" --quiet --upgrade
+            & ".\venv\Scripts\pip.exe" install -e '.[dev]' --quiet --upgrade
         }
     }
     Write-Host "  Dependencies updated." -ForegroundColor Green

@@ -147,15 +147,15 @@ Write-Host "[4/4] Installing dependencies..." -ForegroundColor Yellow
 
 switch ($EnvManager) {
     "uv" {
-        uv pip install -e ".[dev]" --quiet
+        uv pip install -e '.[dev]' --quiet
     }
     "conda" {
         conda activate mcp-creator-growth
-        pip install -e ".[dev]" --quiet
+        pip install -e '.[dev]' --quiet
         conda deactivate
     }
     "venv" {
-        & ".\venv\Scripts\pip.exe" install -e ".[dev]" --quiet
+        & ".\venv\Scripts\pip.exe" install -e '.[dev]' --quiet
     }
 }
 

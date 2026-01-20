@@ -355,22 +355,6 @@ pip install -e '.[dev]' --upgrade
 
 ---
 
-## 🔧 Troubleshooting
-
-Having issues with installation or configuration? Check out our comprehensive troubleshooting guide:
-
-📖 **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**
-
-Common issues covered:
-- Git pull "errors" during installation (not actually errors!)
-- "MCP server already exists" message
-- PowerShell environment variable syntax (`$env:USERPROFILE` vs `%USERPROFILE%`)
-- MCP server not starting
-- Python version issues
-- Configuration file locations
-
----
-
 ## 🖼️ Screenshots
 
 ### Learning Session WebUI

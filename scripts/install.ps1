@@ -94,20 +94,11 @@ Write-Host "[2/4] Setting up repository..." -ForegroundColor Yellow
 if (Test-Path $InstallPath) {
     Write-Host "  Directory exists. Updating..." -ForegroundColor Gray
     Push-Location $InstallPath
-    $gitOutput = git pull origin main 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  Warning: Git pull encountered an issue" -ForegroundColor Yellow
-        Write-Host "  $gitOutput" -ForegroundColor Gray
-    } else {
-        Write-Host "  Repository updated successfully" -ForegroundColor Green
-    }
+    git pull origin main 2>$null
     Pop-Location
 } else {
     Write-Host "  Cloning repository..." -ForegroundColor Gray
-    git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git $InstallPath 2>&1 | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  Repository cloned successfully" -ForegroundColor Green
-    }
+    git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git $InstallPath
 }
 
 Push-Location $InstallPath
@@ -187,27 +178,9 @@ Write-Host "================================================" -ForegroundColor C
 Write-Host "  Configure Your IDE" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
-
-# Check if already configured
-$claudeConfigPath = "$env:USERPROFILE\.config\claude-cli\config.json"
-$alreadyConfigured = $false
-if (Test-Path $claudeConfigPath) {
-    $configContent = Get-Content $claudeConfigPath -Raw | ConvertFrom-Json
-    if ($configContent.mcpServers.'mcp-creator-growth') {
-        $alreadyConfigured = $true
-        Write-Host "✓ Already configured in Claude Code" -ForegroundColor Green
-        Write-Host ""
-    }
-}
-
-if (-not $alreadyConfigured) {
-    Write-Host "For Claude Code (recommended - run this command):" -ForegroundColor Yellow
-    Write-Host "  claude mcp add mcp-creator-growth -- `"$ScriptPath`"" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Note: In PowerShell, use `$env:USERPROFILE instead of %USERPROFILE%" -ForegroundColor DarkGray
-    Write-Host ""
-}
-
+Write-Host "For Claude Code (one command):" -ForegroundColor Yellow
+Write-Host "  claude mcp add mcp-creator-growth -- `"$ScriptPath`"" -ForegroundColor White
+Write-Host ""
 Write-Host "For other IDEs (Cursor, Windsurf, etc.), add this to MCP config:" -ForegroundColor Yellow
 Write-Host "  {" -ForegroundColor Gray
 Write-Host "    `"mcp-creator-growth`": {" -ForegroundColor Gray

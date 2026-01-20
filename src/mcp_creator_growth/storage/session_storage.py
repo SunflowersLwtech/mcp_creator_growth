@@ -6,7 +6,6 @@ Manages persistence of learning sessions to disk.
 Sessions are stored in {project}/.mcp-sidecar/sessions/
 """
 
-import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any

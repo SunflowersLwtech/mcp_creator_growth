@@ -12,7 +12,6 @@ import sys
 from typing import Annotated, Any, Literal
 
 from fastmcp import FastMCP
-from mcp.types import TextContent
 from pydantic import Field
 
 from .debug import server_debug_log as debug_log
@@ -288,7 +287,7 @@ async def learning_session(
     )] = None,
     focus_areas: Annotated[list[Literal[
         "logic", "security", "performance", "architecture", "syntax"
-    ]], Field(
+    ]] | None, Field(
         description="Learning focus areas"
     )] = None,
     timeout: Annotated[int, Field(
@@ -350,12 +349,15 @@ async def learning_session(
         # Import and launch the Web UI
         from .web import launch_learning_session_ui
 
+        # Cast focus_areas to list[str] to satisfy type checker (variance issue)
+        focus_areas_str: list[str] | None = list(focus_areas) if focus_areas else None
+
         result = await launch_learning_session_ui(
             project_directory=project_directory,
             summary=summary,
             reasoning=reasoning,
             quizzes=quizzes,
-            focus_areas=focus_areas,
+            focus_areas=focus_areas_str,
             timeout=timeout,
         )
 

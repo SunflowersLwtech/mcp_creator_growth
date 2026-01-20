@@ -6,7 +6,6 @@ Manages the FastAPI server, learning sessions, and browser integration.
 """
 
 import asyncio
-import os
 import socket
 import threading
 import time
@@ -341,7 +340,8 @@ class WebUIManager:
         self._server = uvicorn.Server(config)
 
         def run_server():
-            asyncio.run(self._server.serve())
+            if self._server:
+                asyncio.run(self._server.serve())
 
         self.server_thread = threading.Thread(target=run_server, daemon=True)
         self.server_thread.start()

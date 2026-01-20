@@ -17,7 +17,6 @@ from .project_meta import ProjectMetaManager
 from .session_storage import SessionStorageManager
 from .path_resolver import (
     get_global_config_dir,
-    get_project_storage_path,
 )
 
 
@@ -221,7 +220,11 @@ class StorageManager:
             global_patterns = self.global_index.search_bug_patterns(query)
             results["global"] = global_patterns[:limit]
         
-        results["total_count"] = len(results["project"]) + len(results["global"])
+        # Ensure lists are sized for len()
+        project_count = len(results["project"]) if isinstance(results["project"], list) else 0
+        global_count = len(results["global"]) if isinstance(results["global"], list) else 0
+
+        results["total_count"] = project_count + global_count
         
         return results
     
@@ -235,6 +238,10 @@ class StorageManager:
         meta = self.meta.get_metadata()
         stats = self.meta.get_statistics()
         
+        # Get session stats safely
+        session_stats = self.sessions.get_statistics()
+        total_sessions = session_stats.get("total_sessions", 0) if session_stats else 0
+
         return {
             "project_name": meta.get("project_name"),
             "project_hash": meta.get("project_hash"),
@@ -249,7 +256,7 @@ class StorageManager:
                 "last_debug": meta.get("last_debug_record"),
             },
             "storage": {
-                "sessions_count": self.sessions.get_statistics().get("total_sessions", 0),
+                "sessions_count": total_sessions,
                 "debug_count": self.debug.get_record_count(),
             },
         }
@@ -280,11 +287,18 @@ class StorageManager:
         
         save_json_file(output_path, export_data)
         
+        # Safely get counts for export summary
+        debug_recs = export_data.get("debug_records", [])
+        debug_count = len(debug_recs) if isinstance(debug_recs, list) else 0
+
+        sessions = export_data.get("sessions", [])
+        session_count = len(sessions) if isinstance(sessions, list) else 0
+
         return {
             "success": True,
             "path": str(output_path),
-            "debug_count": len(export_data["debug_records"]),
-            "session_count": len(export_data["sessions"]),
+            "debug_count": debug_count,
+            "session_count": session_count,
         }
     
     def cleanup(
@@ -308,7 +322,8 @@ class StorageManager:
         }
         
         # Cleanup sessions
-        cleaned["sessions_removed"] = self.sessions.cleanup_old_sessions(max_sessions)
+        # Fix: ensure return value is castable to int if needed, though sessions.cleanup_old_sessions returns int
+        cleaned["sessions_removed"] = int(self.sessions.cleanup_old_sessions(max_sessions))
         
         # Debug cleanup would need age filter (future enhancement)
         # For now, just report

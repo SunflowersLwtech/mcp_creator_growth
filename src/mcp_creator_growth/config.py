@@ -7,6 +7,7 @@ Configuration priority: Environment Variables > config.toml > Defaults
 """
 
 import os
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -81,7 +82,12 @@ def _load_toml_file(path: Path) -> dict[str, Any]:
         return {}
     
     if tomllib is None:
-        debug_log("TOML parser not available, using defaults")
+        warning_message = (
+            "TOML parser not available; config file will be ignored. "
+            "Install 'tomli' for Python < 3.11."
+        )
+        warnings.warn(warning_message, RuntimeWarning)
+        debug_log(warning_message)
         return {}
     
     try:

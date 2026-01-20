@@ -457,11 +457,13 @@ async def debug_search(
             # This reduces context pollution while still providing useful information
             compact_results = []
             for r in results:
+                cause = r.get("cause", "")
+                solution = r.get("solution", "")
                 compact_results.append({
                     "id": r.get("id"),
                     "error_type": r.get("context", {}).get("error_type", "Unknown"),
-                    "cause_summary": r.get("cause", "")[:100] + ("..." if len(r.get("cause", "")) > 100 else ""),
-                    "solution_summary": r.get("solution", "")[:150] + ("..." if len(r.get("solution", "")) > 150 else ""),
+                    "cause_summary": cause[:100] + ("..." if len(cause) > 100 else ""),
+                    "solution_summary": solution[:150] + ("..." if len(solution) > 150 else ""),
                     "tags": r.get("tags", [])[:5],  # Limit tags
                 })
             return {

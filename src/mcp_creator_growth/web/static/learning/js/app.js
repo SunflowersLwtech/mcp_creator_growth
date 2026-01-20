@@ -21,7 +21,8 @@ const state = {
     currentScore: 0,
     startTime: Date.now(),
     isDark: false,
-    wsManager: null
+    wsManager: null,
+    shownWarnings: new Set()
 };
 
 // ==================== Theme Management ====================
@@ -87,6 +88,7 @@ async function loadSession() {
 
         state.currentSession = data.data || data;
         renderSession(state.currentSession);
+        showSessionWarnings(state.currentSession);
 
         // Mark session as started
         if (state.currentSession.session_id) {
@@ -97,6 +99,16 @@ async function loadSession() {
     } catch (e) {
         handleError(e, 'loadSession');
     }
+}
+
+function showSessionWarnings(session) {
+    if (!session?.warnings?.length) return;
+    session.warnings.forEach((warning) => {
+        if (state.shownWarnings.has(warning)) return;
+        state.shownWarnings.add(warning);
+        const message = i18n.t(`toast.${warning}`);
+        showToast(message, 'warning');
+    });
 }
 
 // ==================== Utility Functions ====================
@@ -506,6 +518,7 @@ function initWebSocket() {
                 case 'session_data':
                     state.currentSession = data.data;
                     renderSession(state.currentSession);
+                    showSessionWarnings(state.currentSession);
                     break;
                 case 'status':
                     updateStatus(data.status);

@@ -78,7 +78,8 @@
         "connectionLost": "連線斷開",
         "reconnecting": "正在重連...",
         "reconnected": "已重連!",
-        "languageChanged": "語言已更改"
+        "languageChanged": "語言已更改",
+        "sessionStorageUnavailable": "會話儲存不可用，你的進度將不會保存。"
     },
     "errors": {
         "network": "網路錯誤，請檢查您的連線。",

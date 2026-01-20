@@ -128,7 +128,15 @@ class I18n {
                 buttons: { cancel: 'Cancel', submit: 'Complete Learning', completed: 'Completed' },
                 shortcuts: { submit: 'Submit', copy: 'Copy' },
                 badges: { loading: 'Loading...', learningSession: 'Learning Session' },
-                toast: { copySuccess: 'Copied!', copyError: 'Copy failed', exportSuccess: 'Exported!', submitSuccess: 'Completed!', noSession: 'No session', reconnected: 'Reconnected!' },
+                toast: {
+                    copySuccess: 'Copied!',
+                    copyError: 'Copy failed',
+                    exportSuccess: 'Exported!',
+                    submitSuccess: 'Completed!',
+                    noSession: 'No session',
+                    reconnected: 'Reconnected!',
+                    sessionStorageUnavailable: 'Session storage is unavailable. Your progress will not be saved.'
+                },
                 errors: { network: 'Network error', timeout: 'Timeout', server: 'Server error', unknown: 'Unknown error' }
             },
             'zh-CN': {
@@ -141,7 +149,15 @@ class I18n {
                 buttons: { cancel: '取消', submit: '完成学习', completed: '已完成' },
                 shortcuts: { submit: '提交', copy: '复制' },
                 badges: { loading: '加载中...', learningSession: '学习会话' },
-                toast: { copySuccess: '已复制!', copyError: '复制失败', exportSuccess: '已导出!', submitSuccess: '完成!', noSession: '无会话', reconnected: '已重连!' },
+                toast: {
+                    copySuccess: '已复制!',
+                    copyError: '复制失败',
+                    exportSuccess: '已导出!',
+                    submitSuccess: '完成!',
+                    noSession: '无会话',
+                    reconnected: '已重连!',
+                    sessionStorageUnavailable: '会话存储不可用，你的进度将不会保存。'
+                },
                 errors: { network: '网络错误', timeout: '超时', server: '服务器错误', unknown: '未知错误' }
             },
             'zh-TW': {
@@ -154,7 +170,15 @@ class I18n {
                 buttons: { cancel: '取消', submit: '完成學習', completed: '已完成' },
                 shortcuts: { submit: '提交', copy: '複製' },
                 badges: { loading: '載入中...', learningSession: '學習會話' },
-                toast: { copySuccess: '已複製!', copyError: '複製失敗', exportSuccess: '已匯出!', submitSuccess: '完成!', noSession: '無會話', reconnected: '已重連!' },
+                toast: {
+                    copySuccess: '已複製!',
+                    copyError: '複製失敗',
+                    exportSuccess: '已匯出!',
+                    submitSuccess: '完成!',
+                    noSession: '無會話',
+                    reconnected: '已重連!',
+                    sessionStorageUnavailable: '會話儲存不可用，你的進度將不會保存。'
+                },
                 errors: { network: '網路錯誤', timeout: '逾時', server: '伺服器錯誤', unknown: '未知錯誤' }
             }
         };

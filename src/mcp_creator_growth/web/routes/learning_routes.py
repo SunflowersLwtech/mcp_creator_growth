@@ -54,6 +54,7 @@ class SessionDataResponse(BaseModel):
     quizzes: list[dict[str, Any]]
     focus_areas: list[str]
     terms: list[dict[str, Any]] = []
+    warnings: list[str] = []
     status: str
 
 
@@ -152,6 +153,7 @@ async def get_session_data(session_id: str) -> SessionDataResponse:
         quizzes=data["quizzes"],
         focus_areas=data["focus_areas"],
         terms=data.get("terms", []),
+        warnings=data.get("warnings", []),
         status=data["status"],
     )
 

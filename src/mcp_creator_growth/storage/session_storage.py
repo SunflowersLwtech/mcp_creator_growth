@@ -125,14 +125,15 @@ class SessionStorageManager:
         # Save session file
         save_json_file(session_file, record)
         
-        # Update index
+        # Update index with compact keys for token savings
+        # Keys: sid=session_id, fn=filename, ts=saved_at, qs=quiz_score, t=time_spent, sp=summary_preview
         index_entry = {
-            "session_id": session_id,
-            "filename": filename,
-            "saved_at": timestamp.isoformat(),
-            "quiz_score": quiz_score,
-            "time_spent": time_spent,
-            "summary_preview": session_data.get("summary", "")[:100],
+            "sid": session_id,
+            "fn": filename,
+            "ts": timestamp.isoformat(),
+            "qs": quiz_score,
+            "t": time_spent,
+            "sp": session_data.get("summary", "")[:50],  # Reduced preview length
         }
         self._index["sessions"].append(index_entry)
         
@@ -154,52 +155,79 @@ class SessionStorageManager:
         debug_log(f"Session saved: {filename}")
         return str(session_file)
     
+    def _get_entry_field(self, entry: dict, field: str, short: str, default: Any = None) -> Any:
+        """Get field from entry, supporting both old and new key formats."""
+        return entry.get(short) or entry.get(field, default)
+
     def load_session(self, session_id: str) -> dict[str, Any] | None:
         """
         Load a session by ID.
-        
+
         Args:
             session_id: The session ID to load
-            
+
         Returns:
             Session data or None if not found
         """
-        # Find in index
+        # Find in index (supports both old "session_id" and new "sid" keys)
         for entry in self._index["sessions"]:
-            if entry["session_id"] == session_id:
-                session_file = self.storage_dir / entry["filename"]
+            entry_sid = self._get_entry_field(entry, "session_id", "sid")
+            if entry_sid == session_id:
+                filename = self._get_entry_field(entry, "filename", "fn")
+                session_file = self.storage_dir / filename
                 return load_json_file(session_file)
-        
+
         return None
     
     def list_sessions(self, limit: int = 50) -> list[dict[str, Any]]:
         """
         List recent sessions.
-        
+
         Args:
             limit: Maximum number of sessions to return
-            
+
         Returns:
-            List of session index entries (most recent first)
+            List of session index entries (most recent first), normalized to full keys
         """
         sessions = self._index["sessions"][-limit:]
         sessions.reverse()  # Most recent first
-        return sessions
+
+        # Normalize to full keys for backward compatibility in API responses
+        normalized = []
+        for entry in sessions:
+            normalized.append({
+                "session_id": self._get_entry_field(entry, "session_id", "sid"),
+                "filename": self._get_entry_field(entry, "filename", "fn"),
+                "saved_at": self._get_entry_field(entry, "saved_at", "ts"),
+                "quiz_score": self._get_entry_field(entry, "quiz_score", "qs", 0),
+                "time_spent": self._get_entry_field(entry, "time_spent", "t", 0),
+                "summary_preview": self._get_entry_field(entry, "summary_preview", "sp", ""),
+            })
+        return normalized
     
     def get_session_by_date(self, date: str) -> list[dict[str, Any]]:
         """
         Get all sessions for a specific date.
-        
+
         Args:
             date: Date string in YYYYMMDD format
-            
+
         Returns:
-            List of sessions for that date
+            List of sessions for that date (normalized keys)
         """
-        return [
-            entry for entry in self._index["sessions"]
-            if entry["filename"].startswith(date)
-        ]
+        results = []
+        for entry in self._index["sessions"]:
+            filename = self._get_entry_field(entry, "filename", "fn", "")
+            if filename.startswith(date):
+                results.append({
+                    "session_id": self._get_entry_field(entry, "session_id", "sid"),
+                    "filename": filename,
+                    "saved_at": self._get_entry_field(entry, "saved_at", "ts"),
+                    "quiz_score": self._get_entry_field(entry, "quiz_score", "qs", 0),
+                    "time_spent": self._get_entry_field(entry, "time_spent", "t", 0),
+                    "summary_preview": self._get_entry_field(entry, "summary_preview", "sp", ""),
+                })
+        return results
     
     def get_statistics(self) -> dict[str, Any]:
         """Get session statistics."""
@@ -219,85 +247,89 @@ class SessionStorageManager:
     def delete_session(self, session_id: str) -> bool:
         """
         Delete a session.
-        
+
         Args:
             session_id: The session ID to delete
-            
+
         Returns:
             True if deleted, False if not found
         """
         for i, entry in enumerate(self._index["sessions"]):
-            if entry["session_id"] == session_id:
+            entry_sid = self._get_entry_field(entry, "session_id", "sid")
+            if entry_sid == session_id:
                 # Remove file
-                session_file = self.storage_dir / entry["filename"]
+                filename = self._get_entry_field(entry, "filename", "fn")
+                session_file = self.storage_dir / filename
                 if session_file.exists():
                     session_file.unlink()
-                
-                # Update statistics
+
+                # Update statistics (support both key formats)
                 stats = self._index["statistics"]
                 stats["total_sessions"] -= 1
-                stats["total_quiz_score"] -= entry.get("quiz_score", 0)
-                stats["total_time_spent"] -= entry.get("time_spent", 0)
-                
+                stats["total_quiz_score"] -= self._get_entry_field(entry, "quiz_score", "qs", 0)
+                stats["total_time_spent"] -= self._get_entry_field(entry, "time_spent", "t", 0)
+
                 # Remove from index
                 self._index["sessions"].pop(i)
                 self._save_index()
-                
+
                 debug_log(f"Session deleted: {session_id}")
                 return True
-        
+
         return False
     
     def cleanup_old_sessions(self, max_sessions: int = 100) -> int:
         """
         Remove old sessions if exceeding max limit.
-        
+
         Args:
             max_sessions: Maximum number of sessions to keep
-            
+
         Returns:
             Number of sessions deleted
         """
         sessions = self._index["sessions"]
         if len(sessions) <= max_sessions:
             return 0
-        
+
         # Remove oldest sessions
         to_delete = sessions[:-max_sessions]
         deleted = 0
-        
+
         for entry in to_delete:
-            session_file = self.storage_dir / entry["filename"]
+            filename = self._get_entry_field(entry, "filename", "fn")
+            session_file = self.storage_dir / filename
             if session_file.exists():
                 session_file.unlink()
             deleted += 1
-        
+
         # Update index
         self._index["sessions"] = sessions[-max_sessions:]
         self._save_index()
-        
+
         debug_log(f"Cleaned up {deleted} old sessions")
         return deleted
     
     def export_sessions(self, output_path: Path | str) -> int:
         """
         Export all sessions to a single JSON file.
-        
+
         Args:
             output_path: Path to output file
-            
+
         Returns:
             Number of sessions exported
         """
         output_path = Path(output_path)
-        
+
         all_sessions = []
         for entry in self._index["sessions"]:
-            session_file = self.storage_dir / entry["filename"]
+            filename = self._get_entry_field(entry, "filename", "fn")
+            session_file = self.storage_dir / filename
             data = load_json_file(session_file)
             if data:
                 all_sessions.append(data)
-        
+
         export_data = {
             "version": 1,
             "exported_at": datetime.now().isoformat(),
@@ -305,8 +337,105 @@ class SessionStorageManager:
             "statistics": self.get_statistics(),
             "sessions": all_sessions,
         }
-        
-        save_json_file(output_path, export_data)
+
+        save_json_file(output_path, export_data, pretty=True)  # Export uses pretty for readability
         debug_log(f"Exported {len(all_sessions)} sessions to: {output_path}")
-        
+
         return len(all_sessions)
+
+    def rebuild_index(self) -> dict[str, int]:
+        """
+        Rebuild the session index from session files (Progressive Disclosure).
+
+        This is useful when:
+        - Index is corrupted or lost
+        - Migrating to a new index format
+        - Recalculating statistics
+
+        Returns:
+            dict with rebuild statistics
+        """
+        debug_log("Rebuilding session index from session files...")
+
+        # Find all session files
+        session_files = list(self.storage_dir.glob("*.json"))
+        session_files = [f for f in session_files if f.name != "index.json"]
+
+        # Reset index
+        new_index = {
+            "version": 1,
+            "created_at": self._index.get("created_at", datetime.now().isoformat()),
+            "rebuilt_at": datetime.now().isoformat(),
+            "sessions": [],
+            "statistics": {
+                "total_sessions": 0,
+                "total_quiz_score": 0,
+                "total_time_spent": 0,
+            },
+        }
+
+        stats = {"sessions": 0, "errors": 0}
+
+        for session_file in sorted(session_files):
+            try:
+                data = load_json_file(session_file)
+                if not data:
+                    stats["errors"] += 1
+                    continue
+
+                session_id = data.get("session_id", session_file.stem)
+                results = data.get("results", {})
+                quiz_score = results.get("quiz_score", 0)
+                time_spent = results.get("time_spent", 0)
+
+                # Add compact index entry
+                new_index["sessions"].append({
+                    "sid": session_id,
+                    "fn": session_file.name,
+                    "ts": data.get("saved_at", ""),
+                    "qs": quiz_score,
+                    "t": time_spent,
+                    "sp": data.get("summary", "")[:50],
+                })
+
+                # Update statistics
+                new_index["statistics"]["total_sessions"] += 1
+                new_index["statistics"]["total_quiz_score"] += quiz_score
+                new_index["statistics"]["total_time_spent"] += time_spent
+                stats["sessions"] += 1
+
+            except Exception as e:
+                debug_log(f"Error reading session file {session_file}: {e}")
+                stats["errors"] += 1
+
+        self._index = new_index
+        self._save_index()
+
+        debug_log(f"Session index rebuilt: {stats}")
+        return stats
+
+    def recalculate_statistics(self) -> dict[str, Any]:
+        """
+        Recalculate statistics from index entries (Progressive Disclosure).
+
+        Faster than rebuild_index() when index entries are intact.
+
+        Returns:
+            Updated statistics
+        """
+        total_score = 0
+        total_time = 0
+
+        for entry in self._index["sessions"]:
+            total_score += self._get_entry_field(entry, "quiz_score", "qs", 0)
+            total_time += self._get_entry_field(entry, "time_spent", "t", 0)
+
+        self._index["statistics"] = {
+            "total_sessions": len(self._index["sessions"]),
+            "total_quiz_score": total_score,
+            "total_time_spent": total_time,
+        }
+
+        self._save_index()
+        debug_log(f"Statistics recalculated: {self._index['statistics']}")
+        return self._index["statistics"]

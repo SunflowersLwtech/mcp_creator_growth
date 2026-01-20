@@ -47,11 +47,13 @@ class DebugIndexManager:
     def _load_index(self) -> dict[str, Any]:
         """Load the index from file or create a new one.
 
-        Index structure (optimized for search):
-        - records: List of compact record metadata
+        Index structure (Progressive Disclosure):
+        - records: Minimal metadata only (id, ts, et, tags)
         - tags: Inverted index for tag-based lookup
-        - keywords: Inverted index for keyword-based lookup (new)
-        - error_types: Inverted index for error type lookup (new)
+        - error_types: Inverted index for error type lookup
+        - keywords: Lazy-built, can be rebuilt from records via rebuild_keywords()
+
+        Note: Detailed content (cause, solution) stays in record files.
         """
         if self.index_file.exists():
             try:
@@ -67,19 +69,19 @@ class DebugIndexManager:
                 debug_log(f"Error loading index: {e}, creating new index")
 
         return {
-            "version": 2,
+            "version": 3,  # Bumped for progressive disclosure
             "created_at": datetime.now().isoformat(),
             "records": [],
             "tags": {},
-            "keywords": {},      # Inverted index: keyword -> [record_ids]
-            "error_types": {},   # Inverted index: error_type -> [record_ids]
+            "keywords": {},      # Lazy: rebuilt on demand
+            "error_types": {},
         }
 
     def _save_index(self) -> None:
-        """Save the index to file."""
+        """Save the index to file (compact mode for token savings)."""
         self._index["updated_at"] = datetime.now().isoformat()
         with open(self.index_file, "w", encoding="utf-8") as f:
-            json.dump(self._index, f, ensure_ascii=False, indent=2)
+            json.dump(self._index, f, ensure_ascii=False)
 
     def _extract_keywords(self, text: str) -> list[str]:
         """Extract searchable keywords from text.
@@ -178,10 +180,10 @@ class DebugIndexManager:
             "tags": tags,
         }
 
-        # Save record file
+        # Save record file (compact mode for token savings)
         record_file = self.storage_dir / f"{record_id}.json"
         with open(record_file, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
+            json.dump(record, f, ensure_ascii=False)
 
         # Update index with compact entry
         error_type = actual_context.get("error_type", "Unknown")
@@ -352,6 +354,150 @@ class DebugIndexManager:
         self._save_index()
 
         debug_log("All debug records cleared")
+
+    def rebuild_index(self) -> dict[str, int]:
+        """
+        Rebuild the entire index from record files (Progressive Disclosure).
+
+        This is useful when:
+        - Index is corrupted or lost
+        - Migrating to a new index format
+        - Cleaning up stale entries
+
+        Returns:
+            dict with rebuild statistics
+        """
+        debug_log("Rebuilding debug index from record files...")
+
+        # Find all record files
+        record_files = list(self.storage_dir.glob("*.json"))
+        record_files = [f for f in record_files if f.name != "index.json"]
+
+        # Reset index
+        new_index = {
+            "version": 3,
+            "created_at": self._index.get("created_at", datetime.now().isoformat()),
+            "rebuilt_at": datetime.now().isoformat(),
+            "records": [],
+            "tags": {},
+            "keywords": {},
+            "error_types": {},
+        }
+
+        stats = {"records": 0, "errors": 0, "tags": 0, "keywords": 0}
+
+        for record_file in sorted(record_files):
+            try:
+                with open(record_file, "r", encoding="utf-8") as f:
+                    record = json.load(f)
+
+                record_id = record.get("id", record_file.stem)
+                error_type = record.get("context", {}).get("error_type", "Unknown")
+                tags = record.get("tags", [])
+
+                # Add compact index entry
+                new_index["records"].append({
+                    "id": record_id,
+                    "ts": record.get("timestamp", ""),
+                    "et": error_type,
+                    "tags": tags[:5],
+                })
+                stats["records"] += 1
+
+                # Rebuild tag inverted index
+                for tag in tags:
+                    tag_lower = tag.lower()
+                    if tag_lower not in new_index["tags"]:
+                        new_index["tags"][tag_lower] = []
+                    new_index["tags"][tag_lower].append(record_id)
+                    stats["tags"] += 1
+
+                # Rebuild error_types inverted index
+                et_lower = error_type.lower()
+                if et_lower not in new_index["error_types"]:
+                    new_index["error_types"][et_lower] = []
+                new_index["error_types"][et_lower].append(record_id)
+
+                # Rebuild keywords inverted index
+                cause = record.get("cause", "")
+                solution = record.get("solution", "")
+                keywords = self._extract_keywords(f"{cause} {solution}")
+                for kw in keywords:
+                    if kw not in new_index["keywords"]:
+                        new_index["keywords"][kw] = []
+                    if record_id not in new_index["keywords"][kw]:
+                        new_index["keywords"][kw].append(record_id)
+                        stats["keywords"] += 1
+
+            except (json.JSONDecodeError, IOError) as e:
+                debug_log(f"Error reading record file {record_file}: {e}")
+                stats["errors"] += 1
+
+        self._index = new_index
+        self._save_index()
+
+        debug_log(f"Index rebuilt: {stats}")
+        return stats
+
+    def rebuild_keywords(self) -> int:
+        """
+        Rebuild only the keywords inverted index (lazy rebuild).
+
+        Useful when keywords index is empty but you need keyword search.
+        More efficient than full rebuild if records index is intact.
+
+        Returns:
+            Number of keywords indexed
+        """
+        debug_log("Rebuilding keywords index...")
+
+        self._index["keywords"] = {}
+        keyword_count = 0
+
+        for entry in self._index["records"]:
+            record_id = entry.get("id")
+            record = self.get_record(record_id)
+            if not record:
+                continue
+
+            cause = record.get("cause", "")
+            solution = record.get("solution", "")
+            keywords = self._extract_keywords(f"{cause} {solution}")
+
+            for kw in keywords:
+                if kw not in self._index["keywords"]:
+                    self._index["keywords"][kw] = []
+                if record_id not in self._index["keywords"][kw]:
+                    self._index["keywords"][kw].append(record_id)
+                    keyword_count += 1
+
+        self._save_index()
+        debug_log(f"Keywords index rebuilt: {keyword_count} keywords")
+        return keyword_count
+
+    def compact_index(self) -> dict[str, int]:
+        """
+        Remove keywords index to save space (Progressive Disclosure).
+
+        Keywords can be rebuilt on demand via rebuild_keywords().
+        This reduces index file size significantly for large projects.
+
+        Returns:
+            dict with compaction statistics
+        """
+        keywords_before = len(self._index.get("keywords", {}))
+
+        # Clear keywords (can be rebuilt on demand)
+        self._index["keywords"] = {}
+
+        self._save_index()
+
+        stats = {
+            "keywords_removed": keywords_before,
+            "records_kept": len(self._index["records"]),
+        }
+        debug_log(f"Index compacted: {stats}")
+        return stats
 
 
 # Alias for test compatibility

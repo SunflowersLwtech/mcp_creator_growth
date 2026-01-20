@@ -25,13 +25,13 @@ class DateTimeEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-def serialize_to_json(data: dict[str, Any], pretty: bool = True) -> str:
+def serialize_to_json(data: dict[str, Any], pretty: bool = False) -> str:
     """
     Serialize data to JSON string.
 
     Args:
         data: Data to serialize
-        pretty: If True, format with indentation
+        pretty: If True, format with indentation (default: False for compactness)
 
     Returns:
         JSON string
@@ -64,7 +64,7 @@ def deserialize_from_json(json_str: str) -> dict[str, Any]:
 def save_json_file(
     file_path: Path | str,
     data: dict[str, Any],
-    pretty: bool = True,
+    pretty: bool = False,
 ) -> None:
     """
     Save data to a JSON file.
@@ -72,7 +72,7 @@ def save_json_file(
     Args:
         file_path: Path to save the file
         data: Data to save
-        pretty: If True, format with indentation
+        pretty: If True, format with indentation (default: False for compactness)
     """
     file_path = Path(file_path)
     file_path.parent.mkdir(parents=True, exist_ok=True)

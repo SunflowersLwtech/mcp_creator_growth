@@ -39,7 +39,6 @@ A context-aware **Model Context Protocol (MCP)** server that acts as a learning 
 | `debug_search` | 🔍 Silent RAG | Searches project debug history for relevant past solutions. Auto-triggered on errors. |
 | `debug_record` | 📝 Silent | Records debugging experiences to project knowledge base. Auto-triggered after fixes. |
 | `term_get` | 📚 Reference | Fetches programming terms/concepts. Tracks shown terms to avoid repetition. |
-| `get_system_info` | ℹ️ Utility | Returns system environment information (platform, Python version, etc.). |
 
 ### Tool Details
 

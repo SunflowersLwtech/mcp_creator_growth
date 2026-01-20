@@ -90,10 +90,16 @@ echo "[2/4] Setting up repository..."
 if [ -d "$INSTALL_PATH" ]; then
     echo "  Directory exists. Updating..."
     cd "$INSTALL_PATH"
-    git pull origin main 2>/dev/null || true
+    if git pull origin main 2>&1; then
+        echo "  Repository updated successfully"
+    else
+        echo "  Warning: Git pull encountered an issue"
+    fi
 else
     echo "  Cloning repository..."
-    git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git "$INSTALL_PATH"
+    if git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git "$INSTALL_PATH" 2>&1 >/dev/null; then
+        echo "  Repository cloned successfully"
+    fi
     cd "$INSTALL_PATH"
 fi
 
@@ -172,9 +178,24 @@ echo "================================================"
 echo "  Configure Your IDE"
 echo "================================================"
 echo ""
-echo "For Claude Code (one command):"
-echo "  claude mcp add mcp-creator-growth -- $SCRIPT_PATH"
-echo ""
+
+# Check if already configured
+CLAUDE_CONFIG="$HOME/.config/claude-cli/config.json"
+ALREADY_CONFIGURED=false
+if [ -f "$CLAUDE_CONFIG" ]; then
+    if grep -q "mcp-creator-growth" "$CLAUDE_CONFIG" 2>/dev/null; then
+        ALREADY_CONFIGURED=true
+        echo "✓ Already configured in Claude Code"
+        echo ""
+    fi
+fi
+
+if [ "$ALREADY_CONFIGURED" = false ]; then
+    echo "For Claude Code (recommended - run this command):"
+    echo "  claude mcp add mcp-creator-growth -- $SCRIPT_PATH"
+    echo ""
+fi
+
 echo "For other IDEs (Cursor, Windsurf, etc.), add this to MCP config:"
 echo "  {"
 echo "    \"mcp-creator-growth\": {"

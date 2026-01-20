@@ -50,6 +50,7 @@ class LearningSession:
         quizzes: list[dict[str, Any]] | None = None,
         focus_areas: list[str] | None = None,
         terms: list[dict[str, Any]] | None = None,
+        warnings: list[str] | None = None,
         on_complete_callback: "Callable[[LearningSession], None] | None" = None,
     ):
         """
@@ -63,6 +64,7 @@ class LearningSession:
             quizzes: List of quiz questions
             focus_areas: Learning focus areas
             terms: Programming terms to display (1-5 terms, auto-fetched if None)
+            warnings: Warning codes to surface in the UI
             on_complete_callback: Optional callback to invoke on session completion (for persistence)
         """
         self.session_id = session_id
@@ -72,6 +74,7 @@ class LearningSession:
         self.quizzes = quizzes or []
         self.focus_areas = focus_areas or ["logic"]
         self.terms = terms or []
+        self.warnings = warnings or []
 
         # Status tracking
         self.status = LearningStatus.WAITING
@@ -204,6 +207,7 @@ class LearningSession:
             "quizzes": self.quizzes,
             "focus_areas": self.focus_areas,
             "terms": self.terms,
+            "warnings": self.warnings,
             "status": self.status.value,
             "created_at": self.created_at,
         }

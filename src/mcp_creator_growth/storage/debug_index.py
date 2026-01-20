@@ -303,7 +303,7 @@ class DebugIndexManager:
         Returns:
             List of matching records
         """
-        record_ids = self._index["tags"].get(tag, [])
+        record_ids = self._index["tags"].get(tag.lower(), [])
         return [self.get_record(rid) for rid in record_ids if self.get_record(rid)]
 
     def search_by_error_type(self, error_type: str) -> list[dict[str, Any]]:
@@ -316,10 +316,13 @@ class DebugIndexManager:
         Returns:
             List of matching records
         """
-        matching_ids = [
-            r["id"] for r in self._index["records"]
-            if error_type.lower() in r.get("error_type", "").lower()
-        ]
+        error_type_lower = error_type.lower()
+        matching_ids = self._index.get("error_types", {}).get(error_type_lower)
+        if matching_ids is None:
+            matching_ids = [
+                r["id"] for r in self._index["records"]
+                if error_type_lower in (r.get("et") or r.get("error_type", "")).lower()
+            ]
         return [self.get_record(rid) for rid in matching_ids if self.get_record(rid)]
 
     def get_all_tags(self) -> list[str]:
@@ -339,10 +342,12 @@ class DebugIndexManager:
 
         # Reset index
         self._index = {
-            "version": 1,
+            "version": 2,
             "created_at": datetime.now().isoformat(),
             "records": [],
             "tags": {},
+            "keywords": {},
+            "error_types": {},
         }
         self._save_index()
 

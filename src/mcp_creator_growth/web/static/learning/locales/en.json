@@ -78,7 +78,8 @@
         "connectionLost": "Connection lost",
         "reconnecting": "Reconnecting...",
         "reconnected": "Reconnected!",
-        "languageChanged": "Language changed"
+        "languageChanged": "Language changed",
+        "sessionStorageUnavailable": "Session storage is unavailable. Your progress will not be saved."
     },
     "errors": {
         "network": "Network error. Please check your connection.",

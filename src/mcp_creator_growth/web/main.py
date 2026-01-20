@@ -259,13 +259,17 @@ class WebUIManager:
         # Get or create session storage for this project
         config = get_config()
         storage = None
+        session_warnings: list[str] = []
         if config.storage.sessions_enabled:
             if project_directory not in self._session_storage:
                 try:
                     self._session_storage[project_directory] = SessionStorageManager(project_directory)
                 except Exception as e:
                     debug_log(f"Failed to init session storage: {e}")
+                    session_warnings.append("sessionStorageUnavailable")
             storage = self._session_storage.get(project_directory)
+            if storage is None and "sessionStorageUnavailable" not in session_warnings:
+                session_warnings.append("sessionStorageUnavailable")
 
         # Auto-fetch terms if not provided
         if terms is None:
@@ -299,6 +303,7 @@ class WebUIManager:
             quizzes=quizzes,
             focus_areas=focus_areas,
             terms=terms,
+            warnings=session_warnings,
             on_complete_callback=on_session_complete if storage else None,
         )
 

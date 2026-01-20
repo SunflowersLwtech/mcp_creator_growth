@@ -348,6 +348,22 @@ pip install -e '.[dev]' --upgrade
 
 ---
 
+## 🔧 故障排除
+
+安裝或配置遇到問題？請查看我們的詳細故障排除指南：
+
+📖 **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**（英文）
+
+涵蓋的常見問題：
+- 安裝時 Git pull "錯誤"訊息（實際上不是錯誤！）
+- "MCP server already exists"（伺服器已存在）提示
+- PowerShell 環境變數語法（`$env:USERPROFILE` vs `%USERPROFILE%`）
+- MCP 伺服器無法啟動
+- Python 版本問題
+- 配置檔案位置
+
+---
+
 ## 🖼️ 截圖
 
 ### 學習會話 WebUI

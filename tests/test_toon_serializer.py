@@ -2,6 +2,8 @@
 Unit tests for ToonSerializer
 """
 
+import json
+
 from mcp_creator_growth.storage.toon_serializer import ToonSerializer
 
 
@@ -148,7 +150,6 @@ class TestToonSerializerTokenSavings:
     """Test token savings calculations."""
 
     def test_estimate_token_savings_simple(self):
-        import json
         data = {"name": "test", "value": 42}
         json_str = json.dumps(data)
         toon_str = ToonSerializer.dumps(data)
@@ -158,7 +159,6 @@ class TestToonSerializerTokenSavings:
 
     def test_estimate_token_savings_nested_list(self):
         """Verify nested lists no longer have negative savings."""
-        import json
         data = {"matrix": [[1, 2], [3, 4]]}
         json_str = json.dumps(data)
         toon_str = ToonSerializer.dumps(data)
@@ -173,7 +173,6 @@ class TestToonSerializerTokenSavings:
 
     def test_overall_savings(self):
         """Test that overall savings are positive for typical data."""
-        import json
         test_cases = [
             {"name": "test", "value": 42},
             {"items": ["a", "b", "c"]},

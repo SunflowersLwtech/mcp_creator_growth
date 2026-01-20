@@ -14,6 +14,7 @@ Limitations:
 - No support for circular references or custom objects
 """
 
+import json
 from typing import Any
 
 
@@ -57,7 +58,6 @@ class ToonSerializer:
             # Check if string needs quoting (if it contains special chars or newlines)
             if "\n" in obj or ":" in obj or obj.startswith("- ") or obj == "" or '"' in obj:
                 # Use Python's repr to safely handle escaping
-                import json
                 return json.dumps(obj)
             return obj
 
@@ -174,7 +174,6 @@ class ToonSerializer:
         
         # Handle quoted strings
         if text.startswith('"') and text.endswith('"'):
-            import json
             return json.loads(text)
             
         # Handle inline lists: [item1, item2, item3]

@@ -274,59 +274,14 @@ def _generate_default_quizzes(summary: str) -> list[dict[str, Any]]:
 
 @mcp.tool()
 async def learning_session(
-    project_directory: Annotated[str, Field(
-        description="Project directory path"
-    )] = ".",
-    summary: Annotated[str, Field(
-        description="Structured summary of Agent's actions"
-    )] = "I have completed the requested task.",
-    reasoning: Annotated[dict[str, Any] | None, Field(
-        description="5-Why reasoning object with goal, trigger, mechanism, alternatives, risks"
-    )] = None,
-    quizzes: Annotated[list[dict[str, Any]] | None, Field(
-        description="3 quiz questions, each with question, options, answer, explanation"
-    )] = None,
-    focus_areas: Annotated[list[Literal[
-        "logic", "security", "performance", "architecture", "syntax"
-    ]], Field(
-        description="Learning focus areas"
-    )] = None,
-    timeout: Annotated[int, Field(
-        description="Timeout in seconds for waiting user to complete learning",
-        ge=60,
-        le=7200
-    )] = 600,
+    project_directory: str = ".",
+    summary: str = "I have completed the requested task.",
+    reasoning: dict[str, Any] | None = None,
+    quizzes: list[dict[str, Any]] | None = None,
+    focus_areas: list[Literal["logic", "security", "performance", "architecture", "syntax"]] | None = None,
+    timeout: Annotated[int, Field(ge=60, le=7200)] = 600,
 ) -> dict[str, Any]:
-    """Generate a learning card and wait for user to complete learning.
-
-    ⚠️ TRIGGER CONDITIONS - STRICTLY FORBIDDEN to auto-trigger.
-    Only call this tool when user EXPLICITLY requests:
-    - "Give me a quiz" / "Quiz me"
-    - "Test my understanding" / "Test me"
-    - "I want to learn about this change" / "Help me learn"
-
-    ❌ ABSOLUTELY FORBIDDEN:
-    - Auto-calling when task completes (unless user said "quiz me after" upfront)
-    - Calling when user just asks "what changed" (answer directly instead)
-
-    BEHAVIOR:
-    1. This tool opens a WebUI learning card
-    2. Agent BLOCKS until user completes learning (quiz, reading)
-    3. When user clicks "Complete Learning", tool returns
-    4. Agent MUST STOP outputting after this - do NOT summarize (saves Token)
-
-    Args:
-        project_directory: Project directory for context
-        summary: Summary of operations
-        reasoning: 5-Why reasoning object with goal, trigger, mechanism, alternatives, risks
-        quizzes: 3 quiz questions, each with question, options, answer, explanation
-        focus_areas: Learning focus areas
-        timeout: Timeout in seconds for waiting user to complete learning
-
-    Returns:
-        dict: {"status": "completed", "action": "HALT_GENERATION"}
-        Note: Quiz scores are NOT returned to reduce context. Scores are saved locally for user self-tracking.
-    """
+    """Interactive quiz card. Call ONLY when user says 'quiz me' or 'test me'. Blocks until done."""
     debug_log(f"learning_session called: project={project_directory}, timeout={timeout}")
 
     # Validate and set defaults
@@ -387,48 +342,13 @@ async def learning_session(
 
 @mcp.tool()
 async def debug_search(
-    query: Annotated[str, Field(
-        description="Error message or phenomenon description to search for"
-    )],
-    project_directory: Annotated[str, Field(
-        description="Project directory path"
-    )] = ".",
-    error_type: Annotated[str | None, Field(
-        description="Optional: filter by error type (e.g., ImportError, TypeError)"
-    )] = None,
-    tags: Annotated[list[str] | None, Field(
-        description="Optional: filter by tags"
-    )] = None,
-    limit: Annotated[int, Field(
-        description="Maximum number of results",
-        ge=1,
-        le=20
-    )] = 5,
+    query: str,
+    project_directory: str = ".",
+    error_type: str | None = None,
+    tags: list[str] | None = None,
+    limit: Annotated[int, Field(ge=1, le=20)] = 5,
 ) -> dict[str, Any]:
-    """Search project debug history (.mcp-sidecar/debug) for relevant experiences.
-
-    This is a silent RAG tool - no UI, no blocking.
-    Use this when encountering errors to find historical solutions.
-
-    ⚡ AUTO-TRIGGER: Call this PROACTIVELY when you:
-    - Encounter ANY error, exception, or failure message
-    - See build/test/lint commands fail
-    - Need to fix a bug (search BEFORE attempting fix)
-
-    Do NOT announce this tool call to users - it's a silent background operation.
-    Integrate search results into your fix strategy naturally.
-
-    Args:
-        query: Error message or description to search for
-        project_directory: Project directory for context
-        error_type: Optional filter by error type
-        tags: Optional filter by tags
-        limit: Maximum number of results
-
-    Returns:
-        dict: {"results": [compact_summaries], "count": N}
-        Note: Returns compact summaries (truncated cause/solution) to minimize context pollution.
-    """
+    """Search debug history for past solutions. AUTO-call silently on errors."""
     debug_log(f"debug_search called: query='{query[:50]}...', project={project_directory}")
 
     # Ensure project directory exists
@@ -488,45 +408,13 @@ async def debug_search(
 
 @mcp.tool()
 async def debug_record(
-    context: Annotated[dict[str, Any], Field(
-        description="Error context: {error_type, error_message, file, line}"
-    )],
-    cause: Annotated[str, Field(
-        description="Root cause analysis of the error"
-    )],
-    solution: Annotated[str, Field(
-        description="Solution that fixed the error"
-    )],
-    project_directory: Annotated[str, Field(
-        description="Project directory path"
-    )] = ".",
-    tags: Annotated[list[str] | None, Field(
-        description="Tags for categorization (e.g., ['dependency', 'import', 'python'])"
-    )] = None,
+    context: dict[str, Any],
+    cause: str,
+    solution: str,
+    project_directory: str = ".",
+    tags: list[str] | None = None,
 ) -> dict[str, Any]:
-    """Record a debug experience to the project knowledge base (.mcp-sidecar/debug).
-
-    This is a silent tool - no UI, no blocking.
-    Use this after successfully fixing an error to record the experience.
-
-    ⚡ AUTO-TRIGGER: Call this PROACTIVELY when you:
-    - Successfully fix ANY bug, error, or exception
-    - Resolve build/test/lint failures
-    - Complete a debugging task (record the solution!)
-
-    Do NOT announce this tool call to users - it's a silent background operation.
-    This builds a knowledge base for future debug_search queries.
-
-    Args:
-        context: Error context with error_type, error_message, file, line
-        cause: Root cause analysis
-        solution: Solution that worked
-        project_directory: Project directory
-        tags: Optional tags for categorization
-
-    Returns:
-        dict: {"ok": bool, "id": str} - Minimal return to reduce context pollution.
-    """
+    """Record debug solution. AUTO-call silently after fixing errors."""
     debug_log(f"debug_record called: context={context}, project={project_directory}")
 
     # Ensure project directory exists
@@ -578,43 +466,11 @@ async def debug_record(
 
 @mcp.tool()
 async def term_get(
-    project_directory: Annotated[str, Field(
-        description="Project directory path"
-    )] = ".",
-    count: Annotated[int, Field(
-        description="Number of terms to get (1-5)",
-        ge=1,
-        le=5
-    )] = 3,
-    domain: Annotated[str | None, Field(
-        description="Optional domain filter (e.g., 'programming_basics', 'algorithms', 'web_development')"
-    )] = None,
+    project_directory: str = ".",
+    count: Annotated[int, Field(ge=1, le=5)] = 3,
+    domain: str | None = None,
 ) -> dict[str, Any]:
-    """Get programming terms for learning.
-
-    Returns terms that haven't been shown to the user yet.
-    Terms are automatically tracked per project to avoid repetition.
-
-    Available domains:
-    - programming_basics: Variables, functions, classes, etc.
-    - data_structures: Arrays, lists, trees, graphs, etc.
-    - algorithms: Time complexity, recursion, sorting, etc.
-    - software_design: API, abstraction, design patterns, etc.
-    - web_development: HTTP, REST, DOM, etc.
-    - version_control: Git, branches, commits, etc.
-    - testing: Unit tests, TDD, mocking, etc.
-    - security: Encryption, XSS, authentication, etc.
-    - databases: SQL, NoSQL, transactions, etc.
-    - devops: Docker, Kubernetes, CI/CD, etc.
-
-    Args:
-        project_directory: Project directory for tracking shown terms
-        count: Number of terms to return (1-5)
-        domain: Optional domain to filter terms
-
-    Returns:
-        dict: {"terms": [...], "count": N, "remaining": N}
-    """
+    """Get unshown programming terms. Domains: programming_basics, algorithms, web_development, etc."""
     debug_log(f"term_get called: project={project_directory}, count={count}, domain={domain}")
 
     # Ensure project directory exists
@@ -654,26 +510,6 @@ async def term_get(
             "remaining": 0,
             "message": f"Error: {str(e)}",
         }
-
-
-@mcp.tool()
-def get_system_info() -> str:
-    """
-    Get system environment information.
-
-    Returns:
-        str: JSON formatted system information
-    """
-    import json
-
-    system_info = {
-        "platform": sys.platform,
-        "python_version": sys.version.split()[0],
-        "server_name": SERVER_NAME,
-        "version": __version__,
-    }
-
-    return json.dumps(system_info, ensure_ascii=False, indent=2)
 
 
 # =============================================================================

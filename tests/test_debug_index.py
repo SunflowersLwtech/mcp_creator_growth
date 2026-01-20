@@ -4,7 +4,6 @@ import tempfile
 import shutil
 import os
 import sys
-from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -48,7 +47,7 @@ class TestDebugIndex(unittest.TestCase):
     def test_search_by_error_type_performance(self):
         """Test that search doesn't crash and returns valid records."""
         # Create a record
-        rid = self.manager.record(
+        self.manager.record(
             context={
                 "error_type": "PerfError",
                 "error_message": "msg",
@@ -73,7 +72,7 @@ class TestDebugIndex(unittest.TestCase):
             tags=["python", "test"]
         )
         
-        rid2 = self.manager.record(
+        self.manager.record(
             context={
                 "error_type": "Error2",
                 "error_message": "msg2",

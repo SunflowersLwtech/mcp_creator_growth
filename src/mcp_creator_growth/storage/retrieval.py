@@ -114,13 +114,21 @@ class DebugRetrieval:
                 })
 
         # Sort by score (descending)
-        scored_records.sort(key=lambda x: x["score"], reverse=True)
+        # Type ignore for safe float conversion as score is always number in _calculate_relevance
+        scored_records.sort(key=lambda x: float(x["score"]), reverse=True)  # type: ignore
 
         # Return top results
-        results = []
+        results: list[dict[str, Any]] = []
         for item in scored_records[:limit]:
-            record = item["record"]
-            record["relevance_score"] = round(item["score"], 2)
+            record: dict[str, Any] = item["record"]  # type: ignore
+            if record is None:
+                continue
+            # Cast score to float to satisfy type checker
+            try:
+                score_val = float(item["score"])  # type: ignore
+            except (ValueError, TypeError):
+                score_val = 0.0
+            record["relevance_score"] = round(score_val, 2)
             results.append(record)
 
         debug_log(f"Found {len(results)} relevant records")
@@ -201,9 +209,12 @@ class DebugRetrieval:
         score += solution_matches * 0.15
 
         # Search in tags
-        record_tags = " ".join(record.get("tags", [])).lower()
-        tag_matches = self._count_term_matches(query_terms, record_tags)
-        score += tag_matches * 0.1
+        tags_list = record.get("tags", [])
+        if tags_list:
+            # Create a new variable for the string representation to avoid type conflicts
+            tags_str = " ".join(str(t) for t in tags_list).lower()
+            tag_matches = self._count_term_matches(query_terms, tags_str)
+            score += tag_matches * 0.1
 
         # Exact phrase match bonus
         if query_lower in error_message or query_lower in cause or query_lower in solution:

@@ -7,7 +7,6 @@ Provides CRUD operations for debug records.
 """
 
 import json
-import os
 import hashlib
 from datetime import datetime
 from pathlib import Path

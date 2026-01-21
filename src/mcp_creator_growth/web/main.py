@@ -6,7 +6,6 @@ Manages the FastAPI server, learning sessions, and browser integration.
 """
 
 import asyncio
-import os
 import socket
 import threading
 import time

@@ -12,7 +12,6 @@ import sys
 from typing import Annotated, Any, Literal, cast
 
 from fastmcp import FastMCP
-from mcp.types import TextContent
 from pydantic import Field
 
 from .debug import server_debug_log as debug_log

@@ -17,7 +17,6 @@ from .project_meta import ProjectMetaManager
 from .session_storage import SessionStorageManager
 from .path_resolver import (
     get_global_config_dir,
-    get_project_storage_path,
 )
 
 

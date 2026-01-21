@@ -13,7 +13,7 @@ from enum import Enum
 from typing import Any, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Self
+    pass
 
 from fastapi import WebSocket
 

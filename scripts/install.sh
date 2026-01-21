@@ -19,6 +19,89 @@ echo "  MCP Creator Growth - Installation Script"
 echo "================================================"
 echo ""
 
+# ============================================================================
+# CHECK FOR EXISTING INSTALLATION
+# ============================================================================
+
+find_existing_installation() {
+    local candidates=()
+
+    # Check default installation path
+    if [[ -f "$INSTALL_PATH/.env_manager" ]]; then
+        candidates+=("$INSTALL_PATH")
+    fi
+
+    # Check pip installation
+    if command -v pip &> /dev/null || command -v pip3 &> /dev/null; then
+        local pip_cmd="pip"
+        command -v pip3 &> /dev/null && pip_cmd="pip3"
+
+        local pip_output=$($pip_cmd show mcp-creator-growth 2>/dev/null || true)
+        if [[ -n "$pip_output" ]]; then
+            local editable_location=$(echo "$pip_output" | grep "Editable project location:" | cut -d: -f2- | xargs)
+            if [[ -n "$editable_location" && -d "$editable_location" ]]; then
+                candidates+=("$editable_location")
+            fi
+        fi
+    fi
+
+    # Check common alternative locations
+    local alt_paths=(
+        "$HOME/Documents/mcp-creator-growth"
+        "/opt/mcp-creator-growth"
+    )
+
+    for path in "${alt_paths[@]}"; do
+        if [[ -f "$path/.env_manager" ]]; then
+            candidates+=("$path")
+        fi
+    done
+
+    # Remove duplicates
+    local unique_candidates=($(printf "%s\n" "${candidates[@]}" | sort -u))
+
+    echo "${unique_candidates[@]}"
+}
+
+echo "Checking for existing installation..."
+
+existing_installations=($(find_existing_installation))
+
+if [[ ${#existing_installations[@]} -gt 0 ]]; then
+    echo ""
+    echo "Existing installation detected!"
+    echo ""
+
+    for installation in "${existing_installations[@]}"; do
+        echo "  Found: $installation"
+        if [[ -f "$installation/src/mcp_creator_growth/__init__.py" ]]; then
+            local version=$(grep -oP '__version__\s*=\s*"\K[^"]+' "$installation/src/mcp_creator_growth/__init__.py" 2>/dev/null || echo "unknown")
+            echo "  Version: $version"
+        fi
+    done
+
+    echo ""
+    echo "Running update instead of fresh installation..."
+    echo ""
+
+    # Download and execute update script
+    if curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/update.sh | bash; then
+        exit 0
+    else
+        echo "Failed to download update script. Trying local update..."
+        local local_update_script="${existing_installations[0]}/scripts/update.sh"
+        if [[ -f "$local_update_script" ]]; then
+            bash "$local_update_script"
+            exit 0
+        else
+            echo "Warning: Could not run update script. Continuing with installation..."
+        fi
+    fi
+fi
+
+echo "No existing installation found. Proceeding with fresh installation..."
+echo ""
+
 # Function to check Python version
 check_python_version() {
     local python_cmd="$1"

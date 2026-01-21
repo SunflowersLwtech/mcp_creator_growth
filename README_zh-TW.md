@@ -147,10 +147,13 @@ irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/s
 </table>
 
 安裝腳本會：
-1. 自動檢測 Python 環境（uv → conda → venv）
-2. 克隆倉庫到 `~/mcp-creator-growth`
-3. 建立虛擬環境並安裝依賴
-4. 輸出配置 IDE 所需的確切命令
+1. **智能檢測**：如果檢測到已安裝，自動執行更新而非重新安裝
+2. **環境檢測**：自動檢測 Python 環境（uv → conda → venv）
+3. **克隆倉庫**：克隆到 `~/mcp-creator-growth`（可自訂）
+4. **安裝依賴**：建立虛擬環境並安裝所有依賴
+5. **配置指引**：輸出配置 IDE 所需的確切命令
+
+> **智能特性**：重複執行安裝命令是安全的！腳本會自動檢測已安裝的版本並執行更新。
 
 ### 手動安裝
 
@@ -295,9 +298,17 @@ Agent 將創建一個互動學習卡片並**等待**直到你完成它。
 
 ## 更新
 
-**macOS / Linux:**
+### 一鍵遠端更新（推薦）
+
+遠端更新腳本會自動檢測您的安裝位置，支援**任意路徑格式**（包括中文/非 ASCII 路徑）：
+
+<table>
+<tr>
+<td><b>macOS / Linux</b></td>
+<td>
+
 ```bash
-~/mcp-creator-growth/scripts/update.sh
+curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/update.sh | bash
 ```
 
 </td>
@@ -307,7 +318,7 @@ Agent 將創建一個互動學習卡片並**等待**直到你完成它。
 <td>
 
 ```powershell
-~\mcp-creator-growth\scripts\update.ps1
+irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/update.ps1 | iex
 ```
 
 </td>
@@ -315,9 +326,29 @@ Agent 將創建一個互動學習卡片並**等待**直到你完成它。
 </table>
 
 更新腳本會：
-1. 從倉庫拉取最新程式碼
-2. 升級所有依賴到最新版本
-3. 重啟受影響的 MCP 伺服器實例
+1. **自動檢測**您的安裝位置（支援多個安裝）
+2. **拉取**倉庫的最新程式碼
+3. **強制重裝**依賴以確保版本同步
+4. **驗證**安裝完整性並報告問題
+5. 檢測 MCP 伺服器是否正在使用並提供清晰指引
+
+> **為什麼使用遠端更新？**
+> - ✅ 支援中文/非 ASCII 路徑，無需 `cd` 導航
+> - ✅ 始終使用倉庫最新的更新邏輯
+> - ✅ 即使忘記安裝位置也能自動檢測
+> - ✅ 優雅處理多個安裝
+
+### 本地更新（備選）
+
+**macOS / Linux:**
+```bash
+~/mcp-creator-growth/scripts/update.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+~\mcp-creator-growth\scripts\update.ps1
+```
 
 ### 手動更新
 

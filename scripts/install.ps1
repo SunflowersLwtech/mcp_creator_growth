@@ -23,6 +23,92 @@ Write-Host "  MCP Creator Growth - Installation Script" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 
+# ============================================================================
+# CHECK FOR EXISTING INSTALLATION
+# ============================================================================
+
+function Find-ExistingInstallation {
+    $candidates = @()
+
+    # Check default installation path
+    if (Test-Path "$InstallPath\.env_manager") {
+        $candidates += $InstallPath
+    }
+
+    # Check pip installation
+    try {
+        $pipShow = pip show mcp-creator-growth 2>$null
+        if ($pipShow) {
+            $editableLocation = $pipShow | Select-String "Editable project location:"
+            if ($editableLocation) {
+                $pipPath = ($editableLocation -split ":", 2)[1].Trim()
+                if (Test-Path $pipPath) {
+                    $candidates += $pipPath
+                }
+            }
+        }
+    } catch {}
+
+    # Check common alternative locations
+    $altPaths = @(
+        "$env:USERPROFILE\Documents\mcp-creator-growth",
+        "E:\project\mcp-selfgrowth"
+    )
+    foreach ($path in $altPaths) {
+        if (Test-Path "$path\.env_manager") {
+            $candidates += $path
+        }
+    }
+
+    # Remove duplicates
+    $uniqueCandidates = $candidates | Select-Object -Unique
+
+    return $uniqueCandidates
+}
+
+Write-Host "Checking for existing installation..." -ForegroundColor Gray
+
+$existingInstallations = Find-ExistingInstallation
+
+if ($existingInstallations.Count -gt 0) {
+    Write-Host ""
+    Write-Host "Existing installation detected!" -ForegroundColor Yellow
+    Write-Host ""
+
+    foreach ($installation in $existingInstallations) {
+        Write-Host "  Found: $installation" -ForegroundColor Cyan
+        if (Test-Path "$installation\src\mcp_creator_growth\__init__.py") {
+            $content = Get-Content "$installation\src\mcp_creator_growth\__init__.py" -Raw
+            if ($content -match '__version__\s*=\s*"([^"]+)"') {
+                Write-Host "  Version: $($Matches[1])" -ForegroundColor Gray
+            }
+        }
+    }
+
+    Write-Host ""
+    Write-Host "Running update instead of fresh installation..." -ForegroundColor Cyan
+    Write-Host ""
+
+    # Download and execute update script
+    try {
+        $updateScript = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/update.ps1"
+        Invoke-Expression $updateScript
+        exit 0
+    } catch {
+        Write-Host "Failed to download update script. Trying local update..." -ForegroundColor Yellow
+        $localUpdateScript = Join-Path $existingInstallations[0] "scripts\update.ps1"
+        if (Test-Path $localUpdateScript) {
+            & $localUpdateScript
+            exit 0
+        } else {
+            Write-Host "Warning: Could not run update script. Continuing with installation..." -ForegroundColor Yellow
+        }
+    }
+}
+
+Write-Host "No existing installation found. Proceeding with fresh installation..." -ForegroundColor Green
+Write-Host ""
+
 # Function to check Python version
 function Test-PythonVersion {
     param([string]$PythonCmd)
@@ -94,11 +180,24 @@ Write-Host "[2/4] Setting up repository..." -ForegroundColor Yellow
 if (Test-Path $InstallPath) {
     Write-Host "  Directory exists. Updating..." -ForegroundColor Gray
     Push-Location $InstallPath
-    git pull origin main 2>$null
+    try {
+        $gitOutput = git pull origin main 2>&1
+        if ($LASTEXITCODE -eq 0 -or $gitOutput -match "Already up to date") {
+            Write-Host "  Repository updated." -ForegroundColor Green
+        } else {
+            Write-Host "  Warning: Git pull encountered issues, continuing..." -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "  Warning: Git pull failed, continuing with existing code..." -ForegroundColor Yellow
+    }
     Pop-Location
 } else {
     Write-Host "  Cloning repository..." -ForegroundColor Gray
     git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git $InstallPath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Error: Failed to clone repository" -ForegroundColor Red
+        exit 1
+    }
 }
 
 Push-Location $InstallPath

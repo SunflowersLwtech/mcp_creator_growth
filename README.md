@@ -302,9 +302,17 @@ The debug tools work silently in the background:
 
 ## Updating
 
-**macOS / Linux:**
+### One-Line Update (Recommended)
+
+The remote update script automatically detects your installation and works with **any path format** (including Chinese/non-ASCII paths):
+
+<table>
+<tr>
+<td><b>macOS / Linux</b></td>
+<td>
+
 ```bash
-~/mcp-creator-growth/scripts/update.sh
+curl -fsSL https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/update.sh | bash
 ```
 
 </td>
@@ -314,7 +322,7 @@ The debug tools work silently in the background:
 <td>
 
 ```powershell
-~\mcp-creator-growth\scripts\update.ps1
+irm https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/update.ps1 | iex
 ```
 
 </td>
@@ -322,9 +330,29 @@ The debug tools work silently in the background:
 </table>
 
 The update script will:
-1. Pull the latest changes from the repository
-2. Upgrade all dependencies to their latest versions
-3. Restart any affected MCP server instances
+1. **Auto-detect** your installation location (supports multiple installations)
+2. **Pull** the latest changes from the repository
+3. **Force-reinstall** dependencies to ensure version synchronization
+4. **Verify** installation integrity and report any issues
+5. Detect if MCP server is in use and provide clear instructions
+
+> **Why remote update?**
+> - ✅ Works with Chinese/non-ASCII paths without `cd` navigation
+> - ✅ Always uses the latest update logic from the repository
+> - ✅ Auto-detects installation location even if you forgot where it is
+> - ✅ Handles multiple installations gracefully
+
+### Local Update (Alternative)
+
+**macOS / Linux:**
+```bash
+~/mcp-creator-growth/scripts/update.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+~\mcp-creator-growth\scripts\update.ps1
+```
 
 ### Manual Update
 

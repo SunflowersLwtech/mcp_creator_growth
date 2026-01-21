@@ -151,6 +151,9 @@ class DebugRetrieval:
         query_lower = query.lower()
         query_terms = self._tokenize(query_lower)
 
+        # Expand query terms with synonyms for better matching
+        expanded_terms = self._expand_with_synonyms(query_terms)
+
         # Error type filter (if specified, must match)
         if error_type:
             record_error_type = record.get("context", {}).get("error_type", "")
@@ -167,24 +170,29 @@ class DebugRetrieval:
             # Bonus for each matching tag
             score += 0.1 * len(record_tags.intersection(filter_tags))
 
+        # Search in error type (high weight - this is often the key identifier)
+        record_error_type = record.get("context", {}).get("error_type", "").lower()
+        error_type_matches = self._count_term_matches(expanded_terms, record_error_type)
+        score += error_type_matches * 0.25
+
         # Search in error message
         error_message = record.get("context", {}).get("error_message", "").lower()
-        message_matches = self._count_term_matches(query_terms, error_message)
+        message_matches = self._count_term_matches(expanded_terms, error_message)
         score += message_matches * 0.2
 
         # Search in cause
         cause = record.get("cause", "").lower()
-        cause_matches = self._count_term_matches(query_terms, cause)
+        cause_matches = self._count_term_matches(expanded_terms, cause)
         score += cause_matches * 0.15
 
         # Search in solution
         solution = record.get("solution", "").lower()
-        solution_matches = self._count_term_matches(query_terms, solution)
+        solution_matches = self._count_term_matches(expanded_terms, solution)
         score += solution_matches * 0.15
 
         # Search in tags
         record_tags = " ".join(record.get("tags", [])).lower()
-        tag_matches = self._count_term_matches(query_terms, record_tags)
+        tag_matches = self._count_term_matches(expanded_terms, record_tags)
         score += tag_matches * 0.1
 
         # Exact phrase match bonus
@@ -193,11 +201,33 @@ class DebugRetrieval:
 
         return score
 
+    # Synonym mappings for debug-related terms (mirrors DebugIndexManager.SYNONYMS)
+    SYNONYMS = {
+        "bug": ["error", "exception", "issue", "problem", "fault", "defect"],
+        "error": ["bug", "exception", "issue", "problem", "fault"],
+        "exception": ["error", "bug", "issue", "problem"],
+        "fix": ["solve", "resolve", "repair", "patch", "solution"],
+        "permission": ["access", "denied", "forbidden", "unauthorized"],
+        "import": ["module", "package", "dependency", "require"],
+        "type": ["typeerror", "typing", "typecheck", "cast"],
+        "null": ["none", "nil", "undefined", "empty"],
+        "crash": ["failure", "abort", "terminate", "halt"],
+    }
+
+    def _expand_with_synonyms(self, terms: list[str]) -> list[str]:
+        """Expand query terms with synonyms for better recall."""
+        expanded = set(terms)
+        for term in terms:
+            if term in self.SYNONYMS:
+                expanded.update(self.SYNONYMS[term])
+        return list(expanded)
+
     def _tokenize(self, text: str) -> list[str]:
         """
         Tokenize text into search terms.
 
         Removes common words and normalizes terms.
+        Debug-related terms (error, exception, bug) are kept.
 
         Args:
             text: Text to tokenize
@@ -206,22 +236,26 @@ class DebugRetrieval:
             List of terms
         """
         # Split on non-alphanumeric characters
-        terms = re.split(r'[^a-zA-Z0-9_]+', text)
+        terms = re.split(r'[^a-zA-Z0-9_]+', text.lower())
 
-        # Filter out short terms and common words
+        # Only filter truly generic stop words, keep debug-related terms
         stop_words = {
             "a", "an", "the", "is", "are", "was", "were", "be", "been",
             "to", "of", "in", "for", "on", "with", "at", "by", "from",
             "and", "or", "not", "no", "as", "it", "this", "that",
+            "can", "could", "would", "should", "have", "has", "had",
         }
 
-        return [t for t in terms if len(t) > 2 and t not in stop_words]
+        return [t for t in terms if len(t) >= 3 and t not in stop_words]
 
     def _count_term_matches(self, terms: list[str], text: str) -> int:
-        """Count how many query terms appear in the text."""
+        """Count how many query terms appear in the text (supports substring match)."""
         count = 0
+        text_lower = text.lower()
         for term in terms:
-            if term in text:
+            term_lower = term.lower()
+            # Check for exact word match or substring match
+            if term_lower in text_lower:
                 count += 1
         return count
 

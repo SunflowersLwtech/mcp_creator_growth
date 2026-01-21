@@ -400,6 +400,50 @@ pip install -e '.[dev]' --upgrade
 
 ---
 
+## 🔮 Roadmap
+
+We're building toward a **Personalized Learning Center** that grows with you. Here's what's coming:
+
+### 🔍 Advanced Search & Indexing (v1.2)
+
+| Feature | Description |
+|---------|-------------|
+| **SQLite FTS5** | Full-text search with Chinese support, prefix matching, and boolean queries |
+| **BM25 Ranking** | Industry-standard relevance scoring for better search results |
+| **Semantic Search** | Vector embeddings for meaning-based matching (e.g., "权限错误" finds "permission denied") |
+| **Cross-project Search** | Search debug experiences across all your projects |
+
+### 📱 Mobile App (v2.0)
+
+| Feature | Description |
+|---------|-------------|
+| **Learning History Sync** | Access your quiz history and learning progress on mobile |
+| **Spaced Repetition** | Smart review scheduling based on forgetting curves |
+| **Offline Mode** | Learn anywhere, sync when connected |
+| **Push Notifications** | Gentle reminders to review concepts you're forgetting |
+
+### 🎯 Personalized Learning Center (v2.5)
+
+| Feature | Description |
+|---------|-------------|
+| **Knowledge Graph** | Visual map of concepts you've learned and their connections |
+| **Weakness Analysis** | AI identifies areas where you struggle and suggests focused practice |
+| **Learning Streaks** | Gamification to keep you motivated |
+| **Team Insights** | (Optional) Share anonymized learning patterns with your team |
+
+### 🤖 AI Enhancements (v3.0)
+
+| Feature | Description |
+|---------|-------------|
+| **Adaptive Quizzes** | Questions adjust difficulty based on your performance |
+| **Code Pattern Recognition** | Learn from patterns in your own codebase |
+| **Multi-language Support** | Explanations in your preferred language |
+| **Voice Interface** | "Hey Claude, quiz me on what we did yesterday" |
+
+> **Want to influence the roadmap?** [Open an issue](https://github.com/SunflowersLwtech/mcp_creator_growth/issues) or join the discussion!
+
+---
+
 ## 🔧 Environment Variables
 
 | Variable | Default | Description |

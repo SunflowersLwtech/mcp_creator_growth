@@ -8,7 +8,7 @@ Provides unified interface for storage operations and cross-component updates.
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from ..debug import server_debug_log as debug_log
 from .debug_index import DebugIndexManager
@@ -113,8 +113,8 @@ class StorageManager:
         
         # Add to global patterns if requested
         if add_to_global:
-            error_type = context.get("error_type", "Unknown")
-            error_msg = context.get("error_message", "")
+            error_type = str(context.get("error_type", "Unknown"))
+            error_msg = str(context.get("error_message", ""))
             
             # Create pattern from this experience
             pattern = f"{error_msg[:100]}..." if len(error_msg) > 100 else error_msg
@@ -221,7 +221,7 @@ class StorageManager:
             global_patterns = self.global_index.search_bug_patterns(query)
             results["global"] = global_patterns[:limit]
         
-        results["total_count"] = len(results["project"]) + len(results["global"])
+        results["total_count"] = len(cast(list, results["project"])) + len(cast(list, results["global"]))
         
         return results
     
@@ -283,8 +283,8 @@ class StorageManager:
         return {
             "success": True,
             "path": str(output_path),
-            "debug_count": len(export_data["debug_records"]),
-            "session_count": len(export_data["sessions"]),
+            "debug_count": len(cast(list, export_data["debug_records"])),
+            "session_count": len(cast(list, export_data["sessions"])),
         }
     
     def cleanup(

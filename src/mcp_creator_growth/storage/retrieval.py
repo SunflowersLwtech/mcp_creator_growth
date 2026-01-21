@@ -7,7 +7,7 @@ Used by the debug_search tool to find relevant historical experiences.
 """
 
 import re
-from typing import Any
+from typing import Any, cast
 
 from ..debug import server_debug_log as debug_log
 from .debug_index import DebugIndexManager
@@ -101,13 +101,13 @@ class DebugRetrieval:
                 })
 
         # Sort by score (descending)
-        scored_records.sort(key=lambda x: x["score"], reverse=True)
+        scored_records.sort(key=lambda x: cast(float, x["score"]), reverse=True)
 
         # Return top results
         results = []
         for item in scored_records[:limit]:
-            record = item["record"]
-            record["relevance_score"] = round(item["score"], 2)
+            record = cast(dict[str, Any], item["record"])
+            record["relevance_score"] = round(cast(float, item["score"]), 2)
             results.append(record)
 
         debug_log(f"Found {len(results)} relevant records")
@@ -163,12 +163,12 @@ class DebugRetrieval:
 
         # Tag filter (if specified, must have at least one match)
         if tags:
-            record_tags = set(t.lower() for t in record.get("tags", []))
+            record_tags_set = set(t.lower() for t in record.get("tags", []))
             filter_tags = set(t.lower() for t in tags)
-            if not record_tags.intersection(filter_tags):
+            if not record_tags_set.intersection(filter_tags):
                 return 0.0  # No tag match
             # Bonus for each matching tag
-            score += 0.1 * len(record_tags.intersection(filter_tags))
+            score += 0.1 * len(record_tags_set.intersection(filter_tags))
 
         # Search in error type (high weight - this is often the key identifier)
         record_error_type = record.get("context", {}).get("error_type", "").lower()

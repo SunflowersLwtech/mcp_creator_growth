@@ -11,7 +11,7 @@ import os
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from ..debug import server_debug_log as debug_log
 
@@ -358,7 +358,7 @@ class DebugIndexManager:
             List of matching records
         """
         record_ids = self._index["tags"].get(tag.lower(), [])
-        return [self.get_record(rid) for rid in record_ids if self.get_record(rid)]
+        return cast(list[dict[str, Any]], [r for rid in record_ids if (r := self.get_record(rid)) is not None])
 
     def search_by_error_type(self, error_type: str) -> list[dict[str, Any]]:
         """
@@ -377,7 +377,7 @@ class DebugIndexManager:
                 r["id"] for r in self._index["records"]
                 if error_type_lower in (r.get("et") or r.get("error_type", "")).lower()
             ]
-        return [self.get_record(rid) for rid in matching_ids if self.get_record(rid)]
+        return cast(list[dict[str, Any]], [r for rid in matching_ids if (r := self.get_record(rid)) is not None])
 
     def get_all_tags(self) -> list[str]:
         """Get all unique tags."""

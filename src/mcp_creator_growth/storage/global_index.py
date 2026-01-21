@@ -7,7 +7,7 @@ Stores learned concepts and common bug patterns.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from ..debug import server_debug_log as debug_log
 from .path_resolver import get_global_storage_path
@@ -148,7 +148,7 @@ class GlobalIndexManager:
     def get_concepts_by_category(self, category: str) -> list[dict[str, Any]]:
         """Get all concepts in a category."""
         concept_ids = self._concepts["by_category"].get(category, [])
-        return [self.get_concept(cid) for cid in concept_ids if self.get_concept(cid)]
+        return cast(list[dict[str, Any]], [c for cid in concept_ids if (c := self.get_concept(cid)) is not None])
 
     def add_bug_pattern(
         self,
@@ -219,7 +219,7 @@ class GlobalIndexManager:
             if error_type.lower() in err_type.lower() and err_type != error_type:
                 pattern_ids.extend(ids)
 
-        return [self.get_bug_pattern(pid) for pid in pattern_ids if self.get_bug_pattern(pid)]
+        return cast(list[dict[str, Any]], [p for pid in pattern_ids if (p := self.get_bug_pattern(pid)) is not None])
 
     def get_all_concepts(self) -> list[dict[str, Any]]:
         """Get all concepts."""

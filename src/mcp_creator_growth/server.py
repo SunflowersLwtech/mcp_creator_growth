@@ -9,7 +9,7 @@ the user completes the learning card.
 
 import os
 import sys
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, cast
 
 from fastmcp import FastMCP
 from mcp.types import TextContent
@@ -310,7 +310,7 @@ async def learning_session(
             summary=summary,
             reasoning=reasoning,
             quizzes=quizzes,
-            focus_areas=focus_areas,
+            focus_areas=cast(list[str] | None, focus_areas),
             timeout=timeout,
         )
 

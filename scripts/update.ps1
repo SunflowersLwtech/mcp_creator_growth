@@ -40,18 +40,29 @@ function Find-InstallationPath {
     }
 
     # Method 2: Scan for .env_manager marker file (written by install.ps1)
-    $drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -match '^[A-Z]:\\$' }
-    foreach ($drive in $drives) {
-        # Common user locations
-        $searchPaths = @(
-            (Join-Path $env:USERPROFILE "mcp-creator-growth"),
-            (Join-Path $env:USERPROFILE "Documents\mcp-creator-growth"),
-            (Join-Path $drive.Root "project\mcp-selfgrowth"),
-            (Join-Path $drive.Root "projects\mcp-creator-growth")
-        )
+    # Check common locations without iterating all drives to avoid duplicates
+    $searchPaths = @(
+        (Join-Path $env:USERPROFILE "mcp-creator-growth"),
+        (Join-Path $env:USERPROFILE "Documents\mcp-creator-growth"),
+        "C:\project\mcp-selfgrowth",
+        "D:\project\mcp-selfgrowth",
+        "E:\project\mcp-selfgrowth",
+        "C:\projects\mcp-creator-growth",
+        "D:\projects\mcp-creator-growth",
+        "E:\projects\mcp-creator-growth"
+    )
 
-        foreach ($path in $searchPaths) {
-            if ((Test-Path $path) -and (Test-Path (Join-Path $path ".env_manager"))) {
+    foreach ($path in $searchPaths) {
+        if ((Test-Path $path) -and (Test-Path (Join-Path $path ".env_manager"))) {
+            # Check if already in candidates by Path
+            $alreadyAdded = $false
+            foreach ($existing in $candidates) {
+                if ($existing.Path -eq $path) {
+                    $alreadyAdded = $true
+                    break
+                }
+            }
+            if (-not $alreadyAdded) {
                 $candidates += @{Path=$path; Source=".env_manager"; Priority=2}
                 Write-Host "  Found: $path (marker file)" -ForegroundColor Gray
             }
@@ -66,8 +77,18 @@ function Find-InstallationPath {
             if ($editableLocation) {
                 $pipPath = ($editableLocation -split ":", 2)[1].Trim()
                 if (Test-Path $pipPath) {
-                    $candidates += @{Path=$pipPath; Source="pip (editable)"; Priority=3}
-                    Write-Host "  Found: $pipPath (pip editable)" -ForegroundColor Gray
+                    # Check if already in candidates
+                    $alreadyAdded = $false
+                    foreach ($existing in $candidates) {
+                        if ($existing.Path -eq $pipPath) {
+                            $alreadyAdded = $true
+                            break
+                        }
+                    }
+                    if (-not $alreadyAdded) {
+                        $candidates += @{Path=$pipPath; Source="pip (editable)"; Priority=3}
+                        Write-Host "  Found: $pipPath (pip editable)" -ForegroundColor Gray
+                    }
                 }
             }
         }
@@ -91,8 +112,16 @@ function Find-InstallationPath {
         }
     }
 
-    # Remove duplicates and sort by priority
-    $uniqueCandidates = $candidates | Sort-Object -Property Priority -Unique | Select-Object -First 5
+    # Remove duplicates and sort by priority (manual deduplication)
+    $seenPaths = @{}
+    $uniqueCandidates = @()
+    foreach ($candidate in ($candidates | Sort-Object -Property Priority)) {
+        if (-not $seenPaths.ContainsKey($candidate.Path)) {
+            $seenPaths[$candidate.Path] = $true
+            $uniqueCandidates += $candidate
+            if ($uniqueCandidates.Count -ge 5) { break }
+        }
+    }
 
     if ($uniqueCandidates.Count -eq 0) {
         Write-Host ""

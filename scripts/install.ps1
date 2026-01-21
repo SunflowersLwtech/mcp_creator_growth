@@ -91,17 +91,30 @@ if ($existingInstallations.Count -gt 0) {
 
     # Download and execute update script
     try {
-        $updateScript = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/update.ps1"
+        Write-Host "Downloading update script from GitHub..." -ForegroundColor Gray
+        $updateScript = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/SunflowersLwtech/mcp_creator_growth/main/scripts/update.ps1" -ErrorAction Stop
+
+        if ([string]::IsNullOrWhiteSpace($updateScript)) {
+            throw "Downloaded script is empty"
+        }
+
+        Write-Host "Executing remote update script..." -ForegroundColor Gray
         Invoke-Expression $updateScript
         exit 0
     } catch {
-        Write-Host "Failed to download update script. Trying local update..." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Failed to download remote update script: $_" -ForegroundColor Yellow
+        Write-Host "Trying local update script..." -ForegroundColor Yellow
+        Write-Host ""
+
         $localUpdateScript = Join-Path $existingInstallations[0] "scripts\update.ps1"
         if (Test-Path $localUpdateScript) {
             & $localUpdateScript
             exit 0
         } else {
-            Write-Host "Warning: Could not run update script. Continuing with installation..." -ForegroundColor Yellow
+            Write-Host "Error: Local update script not found at: $localUpdateScript" -ForegroundColor Red
+            Write-Host "Skipping update and continuing with fresh installation..." -ForegroundColor Yellow
+            Write-Host ""
         }
     }
 }

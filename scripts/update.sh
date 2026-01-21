@@ -73,14 +73,27 @@ find_installation_path() {
         "$HOME/mcp-creator-growth"
         "$HOME/Documents/mcp-creator-growth"
         "/opt/mcp-creator-growth"
+        "/mnt/c/project/mcp-selfgrowth"
+        "/mnt/d/project/mcp-selfgrowth"
+        "/mnt/e/project/mcp-selfgrowth"
     )
 
     for path in "${search_paths[@]}"; do
         if [[ -f "$path/.env_manager" ]]; then
-            candidates+=("$path")
-            candidate_sources+=(".env_manager")
-            candidate_priorities+=(2)
-            echo -e "${GRAY}  Found: $path (marker file)${NC}"
+            # Check if already added
+            local already_added=false
+            for existing in "${candidates[@]}"; do
+                if [[ "$existing" == "$path" ]]; then
+                    already_added=true
+                    break
+                fi
+            done
+            if [[ "$already_added" == false ]]; then
+                candidates+=("$path")
+                candidate_sources+=(".env_manager")
+                candidate_priorities+=(2)
+                echo -e "${GRAY}  Found: $path (marker file)${NC}"
+            fi
         fi
     done
 
@@ -90,32 +103,52 @@ find_installation_path() {
         if [[ -n "$pip_output" ]]; then
             local editable_location=$(echo "$pip_output" | grep "Editable project location:" | cut -d: -f2- | xargs)
             if [[ -n "$editable_location" && -d "$editable_location" ]]; then
-                candidates+=("$editable_location")
-                candidate_sources+=("pip (editable)")
-                candidate_priorities+=(3)
-                echo -e "${GRAY}  Found: $editable_location (pip editable)${NC}"
+                # Check if already added
+                local already_added=false
+                for existing in "${candidates[@]}"; do
+                    if [[ "$existing" == "$editable_location" ]]; then
+                        already_added=true
+                        break
+                    fi
+                done
+                if [[ "$already_added" == false ]]; then
+                    candidates+=("$editable_location")
+                    candidate_sources+=("pip (editable)")
+                    candidate_priorities+=(3)
+                    echo -e "${GRAY}  Found: $editable_location (pip editable)${NC}"
+                fi
             fi
         fi
     fi
 
-    # Remove duplicates (keep first occurrence)
+    # Sort by priority and remove any remaining duplicates
     local unique_candidates=()
     local unique_sources=()
-    local unique_priorities=()
+    local seen_paths=()
 
-    for i in "${!candidates[@]}"; do
+    # Create sorted index array
+    local sorted_indices=($(
+        for i in "${!candidates[@]}"; do
+            echo "$i ${candidate_priorities[$i]}"
+        done | sort -k2 -n | cut -d' ' -f1
+    ))
+
+    for i in "${sorted_indices[@]}"; do
         local candidate="${candidates[$i]}"
-        local found=false
-        for existing in "${unique_candidates[@]}"; do
-            if [[ "$candidate" == "$existing" ]]; then
-                found=true
+        local already_seen=false
+        for seen in "${seen_paths[@]}"; do
+            if [[ "$candidate" == "$seen" ]]; then
+                already_seen=true
                 break
             fi
         done
-        if [[ "$found" == false ]]; then
+        if [[ "$already_seen" == false ]]; then
             unique_candidates+=("$candidate")
             unique_sources+=("${candidate_sources[$i]}")
-            unique_priorities+=("${candidate_priorities[$i]}")
+            seen_paths+=("$candidate")
+            if [[ ${#unique_candidates[@]} -ge 5 ]]; then
+                break
+            fi
         fi
     done
 

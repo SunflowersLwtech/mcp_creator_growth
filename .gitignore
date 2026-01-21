@@ -25,6 +25,7 @@ venv/
 ENV/
 env/
 .venv/
+mcp-creator-growth/  # MCP project virtual environment
 
 # IDE
 .idea/

@@ -166,15 +166,15 @@ cd mcp_creator_growth
 
 # 2. Create virtual environment and install
 # Using uv (recommended)
-uv venv --python 3.11 .venv
-source .venv/bin/activate          # macOS/Linux
-# .venv\Scripts\activate           # Windows
+uv venv --python 3.11 mcp-creator-growth
+source mcp-creator-growth/bin/activate          # macOS/Linux
+# mcp-creator-growth\Scripts\activate           # Windows
 uv pip install -e '.[dev]'
 
 # Or using standard venv
-python -m venv venv
-source venv/bin/activate           # macOS/Linux
-# venv\Scripts\activate            # Windows
+python -m venv mcp-creator-growth
+source mcp-creator-growth/bin/activate           # macOS/Linux
+# mcp-creator-growth\Scripts\activate            # Windows
 pip install -e '.[dev]'
 ```
 
@@ -193,10 +193,10 @@ After installation, configure your AI coding IDE to use this MCP server.
 **Option 1: CLI (Recommended)**
 ```bash
 # macOS / Linux
-claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
+claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth
 
 # Windows
-claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
+claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\mcp-creator-growth\Scripts\mcp-creator-growth.exe
 ```
 
 **Option 2: Config File**
@@ -206,7 +206,7 @@ Add to `~/.claude.json`:
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth"
     }
   }
 }
@@ -217,15 +217,15 @@ For Windows:
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
+      "command": "C:\\Users\\YourName\\mcp-creator-growth\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe"
     }
   }
 }
 ```
 
 Example paths:
-- Unix (uv): `~/mcp-creator-growth/.venv/bin/mcp-creator-growth`
-- Windows (uv): `C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe`
+- Unix (uv): `~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth`
+- Windows (uv): `C:\\Users\\YourName\\mcp-creator-growth\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 - Windows (conda): `C:\\Users\\YourName\\anaconda3\\envs\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 
 ### Cursor
@@ -235,7 +235,7 @@ Add to Cursor MCP settings (Settings → MCP → Add Server):
 ```json
 {
   "mcp-creator-growth": {
-    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+    "command": "~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth"
   }
 }
 ```
@@ -244,7 +244,7 @@ For Windows:
 ```json
 {
   "mcp-creator-growth": {
-    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
+    "command": "C:\\Users\\YourName\\mcp-creator-growth\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe"
   }
 }
 ```
@@ -257,7 +257,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth"
     }
   }
 }
@@ -266,7 +266,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 ### Other IDEs
 
 For any MCP-compatible IDE, use these settings:
-- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (or `.venv\Scripts\mcp-creator-growth.exe` on Windows)
+- **Command:** `<install-path>/mcp-creator-growth/bin/mcp-creator-growth` (or `mcp-creator-growth\Scripts\mcp-creator-growth.exe` on Windows)
 - **Transport:** stdio
 
 **After configuration, restart your IDE.**
@@ -368,13 +368,13 @@ git pull origin main
 
 # Update dependencies
 # Using uv
-source .venv/bin/activate          # macOS/Linux
-# .venv\Scripts\activate           # Windows
+source mcp-creator-growth/bin/activate          # macOS/Linux
+# mcp-creator-growth\Scripts\activate           # Windows
 uv pip install -e '.[dev]' --upgrade
 
 # Or using standard venv
-source venv/bin/activate           # macOS/Linux
-# venv\Scripts\activate            # Windows
+source mcp-creator-growth/bin/activate           # macOS/Linux
+# mcp-creator-growth\Scripts\activate            # Windows
 pip install -e '.[dev]' --upgrade
 ```
 

@@ -189,13 +189,13 @@ echo "[3/4] Creating virtual environment..."
 
 case "$ENV_MANAGER" in
     "uv")
-        if [ ! -d ".venv" ]; then
-            uv venv --python $PYTHON_VERSION_REQUIRED .venv
+        if [ ! -d "mcp-creator-growth" ]; then
+            uv venv --python $PYTHON_VERSION_REQUIRED mcp-creator-growth
             echo "  Virtual environment created with Python $PYTHON_VERSION_REQUIRED"
         else
             echo "  Virtual environment already exists."
         fi
-        SCRIPT_PATH="$INSTALL_PATH/.venv/bin/mcp-creator-growth"
+        SCRIPT_PATH="$INSTALL_PATH/mcp-creator-growth/bin/mcp-creator-growth"
         ;;
     "conda")
         if ! conda env list | grep -q "mcp-creator-growth"; then
@@ -209,13 +209,13 @@ case "$ENV_MANAGER" in
         SCRIPT_PATH="$CONDA_ENV_PATH/bin/mcp-creator-growth"
         ;;
     "venv")
-        if [ ! -d "venv" ]; then
-            python3 -m venv venv
+        if [ ! -d "mcp-creator-growth" ]; then
+            python3 -m venv mcp-creator-growth
             echo "  Virtual environment created."
         else
             echo "  Virtual environment already exists."
         fi
-        SCRIPT_PATH="$INSTALL_PATH/venv/bin/mcp-creator-growth"
+        SCRIPT_PATH="$INSTALL_PATH/mcp-creator-growth/bin/mcp-creator-growth"
         ;;
 esac
 
@@ -234,7 +234,7 @@ case "$ENV_MANAGER" in
         conda deactivate
         ;;
     "venv")
-        ./venv/bin/pip install -e '.[dev]' --quiet
+        ./mcp-creator-growth/bin/pip install -e '.[dev]' --quiet
         ;;
 esac
 

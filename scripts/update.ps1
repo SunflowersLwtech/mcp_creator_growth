@@ -198,12 +198,29 @@ if (Test-Path ".env_manager") {
     Write-Host "  Environment: $EnvManager" -ForegroundColor Green
 } else {
     # Fallback: detect from existing environment
-    if (Test-Path ".venv") {
-        $EnvManager = "uv"
+    # Check for new naming convention first
+    if (Test-Path "mcp-creator-growth") {
+        # Could be uv or venv, check for uv-specific files
+        if (Test-Path "mcp-creator-growth\pyvenv.cfg") {
+            $cfg = Get-Content "mcp-creator-growth\pyvenv.cfg" -Raw
+            if ($cfg -match "uv") {
+                $EnvManager = "uv"
+            } else {
+                $EnvManager = "venv"
+            }
+        } else {
+            $EnvManager = "venv"  # Default assumption
+        }
     } elseif ((conda env list 2>$null | Select-String "mcp-creator-growth")) {
         $EnvManager = "conda"
+    } elseif (Test-Path ".venv") {
+        # Legacy uv installation
+        $EnvManager = "uv"
+        Write-Host "  Detected legacy .venv directory" -ForegroundColor Yellow
     } elseif (Test-Path "venv") {
+        # Legacy venv installation
         $EnvManager = "venv"
+        Write-Host "  Detected legacy venv directory" -ForegroundColor Yellow
     } else {
         Write-Host "  Error: Cannot detect environment manager." -ForegroundColor Red
         Write-Host "  Please run install script again:" -ForegroundColor Yellow
@@ -272,7 +289,12 @@ Write-Host "[4/5] Updating dependencies..." -ForegroundColor Yellow
 
 # Determine exe path based on environment
 $ExePath = switch ($EnvManager) {
-    "uv" { Join-Path $InstallPath ".venv\Scripts\mcp-creator-growth.exe" }
+    "uv" {
+        # Check new location first, then legacy
+        $newPath = Join-Path $InstallPath "mcp-creator-growth\Scripts\mcp-creator-growth.exe"
+        $legacyPath = Join-Path $InstallPath ".venv\Scripts\mcp-creator-growth.exe"
+        if (Test-Path $newPath) { $newPath } elseif (Test-Path $legacyPath) { $legacyPath } else { $newPath }
+    }
     "conda" {
         $condaInfo = conda env list 2>$null | Select-String "mcp-creator-growth"
         if ($condaInfo) {
@@ -280,7 +302,12 @@ $ExePath = switch ($EnvManager) {
             Join-Path $CondaEnvPath "Scripts\mcp-creator-growth.exe"
         } else { $null }
     }
-    "venv" { Join-Path $InstallPath "venv\Scripts\mcp-creator-growth.exe" }
+    "venv" {
+        # Check new location first, then legacy
+        $newPath = Join-Path $InstallPath "mcp-creator-growth\Scripts\mcp-creator-growth.exe"
+        $legacyPath = Join-Path $InstallPath "venv\Scripts\mcp-creator-growth.exe"
+        if (Test-Path $newPath) { $newPath } elseif (Test-Path $legacyPath) { $legacyPath } else { $newPath }
+    }
 }
 
 # Check if exe is locked
@@ -327,7 +354,10 @@ if ($Force -and $isLocked) {
                 $null = conda deactivate 2>&1
             }
             "venv" {
-                $pipPath = Join-Path $InstallPath "venv\Scripts\pip.exe"
+                # Check new location first, then legacy
+                $newPipPath = Join-Path $InstallPath "mcp-creator-growth\Scripts\pip.exe"
+                $legacyPipPath = Join-Path $InstallPath "venv\Scripts\pip.exe"
+                $pipPath = if (Test-Path $newPipPath) { $newPipPath } else { $legacyPipPath }
                 & $pipPath install -e ".[dev]" --force-reinstall --no-deps --quiet
             }
         }

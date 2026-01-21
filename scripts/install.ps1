@@ -221,13 +221,13 @@ Write-Host "[3/4] Creating virtual environment..." -ForegroundColor Yellow
 
 switch ($EnvManager) {
     "uv" {
-        if (-not (Test-Path ".venv")) {
-            uv venv --python $PythonVersionRequired .venv
+        if (-not (Test-Path "mcp-creator-growth")) {
+            uv venv --python $PythonVersionRequired mcp-creator-growth
             Write-Host "  Virtual environment created with Python $PythonVersionRequired" -ForegroundColor Green
         } else {
             Write-Host "  Virtual environment already exists." -ForegroundColor Gray
         }
-        $ScriptPath = "$InstallPath\.venv\Scripts\mcp-creator-growth.exe"
+        $ScriptPath = "$InstallPath\mcp-creator-growth\Scripts\mcp-creator-growth.exe"
     }
     "conda" {
         $envExists = conda env list | Select-String "mcp-creator-growth"
@@ -243,13 +243,13 @@ switch ($EnvManager) {
         $ScriptPath = "$CondaEnvPath\Scripts\mcp-creator-growth.exe"
     }
     "venv" {
-        if (-not (Test-Path "venv")) {
-            python -m venv venv
+        if (-not (Test-Path "mcp-creator-growth")) {
+            python -m venv mcp-creator-growth
             Write-Host "  Virtual environment created." -ForegroundColor Green
         } else {
             Write-Host "  Virtual environment already exists." -ForegroundColor Gray
         }
-        $ScriptPath = "$InstallPath\venv\Scripts\mcp-creator-growth.exe"
+        $ScriptPath = "$InstallPath\mcp-creator-growth\Scripts\mcp-creator-growth.exe"
     }
 }
 
@@ -267,7 +267,7 @@ switch ($EnvManager) {
         conda deactivate
     }
     "venv" {
-        & ".\venv\Scripts\pip.exe" install -e '.[dev]' --quiet
+        & ".\mcp-creator-growth\Scripts\pip.exe" install -e '.[dev]' --quiet
     }
 }
 

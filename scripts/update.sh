@@ -223,12 +223,28 @@ if [[ -f ".env_manager" ]]; then
     echo -e "${GREEN}  Environment: $ENV_MANAGER${NC}"
 else
     # Fallback: detect from existing environment
-    if [[ -d ".venv" ]]; then
-        ENV_MANAGER="uv"
+    # Check new naming convention first
+    if [[ -d "mcp-creator-growth" ]]; then
+        # Could be uv or venv, check pyvenv.cfg
+        if [[ -f "mcp-creator-growth/pyvenv.cfg" ]]; then
+            if grep -q "uv" "mcp-creator-growth/pyvenv.cfg" 2>/dev/null; then
+                ENV_MANAGER="uv"
+            else
+                ENV_MANAGER="venv"
+            fi
+        else
+            ENV_MANAGER="venv"  # Default assumption
+        fi
     elif conda env list 2>/dev/null | grep -q "mcp-creator-growth"; then
         ENV_MANAGER="conda"
+    elif [[ -d ".venv" ]]; then
+        # Legacy uv installation
+        ENV_MANAGER="uv"
+        echo -e "${YELLOW}  Detected legacy .venv directory${NC}"
     elif [[ -d "venv" ]]; then
+        # Legacy venv installation
         ENV_MANAGER="venv"
+        echo -e "${YELLOW}  Detected legacy venv directory${NC}"
     else
         echo -e "${RED}  Error: Cannot detect environment manager.${NC}"
         echo -e "${YELLOW}  Please run install script again:${NC}"
@@ -289,7 +305,16 @@ echo -e "${YELLOW}[4/5] Updating dependencies...${NC}"
 # Determine exe path based on environment
 case $ENV_MANAGER in
     uv)
-        EXE_PATH="$INSTALL_PATH/.venv/bin/mcp-creator-growth"
+        # Check new location first, then legacy
+        NEW_PATH="$INSTALL_PATH/mcp-creator-growth/bin/mcp-creator-growth"
+        LEGACY_PATH="$INSTALL_PATH/.venv/bin/mcp-creator-growth"
+        if [[ -f "$NEW_PATH" ]]; then
+            EXE_PATH="$NEW_PATH"
+        elif [[ -f "$LEGACY_PATH" ]]; then
+            EXE_PATH="$LEGACY_PATH"
+        else
+            EXE_PATH="$NEW_PATH"  # Default for new installations
+        fi
         ;;
     conda)
         CONDA_ENV_PATH=$(conda env list 2>/dev/null | grep "mcp-creator-growth" | awk '{print $NF}')
@@ -300,7 +325,16 @@ case $ENV_MANAGER in
         fi
         ;;
     venv)
-        EXE_PATH="$INSTALL_PATH/venv/bin/mcp-creator-growth"
+        # Check new location first, then legacy
+        NEW_PATH="$INSTALL_PATH/mcp-creator-growth/bin/mcp-creator-growth"
+        LEGACY_PATH="$INSTALL_PATH/venv/bin/mcp-creator-growth"
+        if [[ -f "$NEW_PATH" ]]; then
+            EXE_PATH="$NEW_PATH"
+        elif [[ -f "$LEGACY_PATH" ]]; then
+            EXE_PATH="$LEGACY_PATH"
+        else
+            EXE_PATH="$NEW_PATH"  # Default for new installations
+        fi
         ;;
 esac
 
@@ -337,7 +371,14 @@ else
     # Force reinstall to ensure version sync
     case $ENV_MANAGER in
         uv)
-            if source .venv/bin/activate && uv pip install -e '.[dev]' --reinstall --quiet; then
+            # Check new location first, then legacy
+            if [[ -f "mcp-creator-growth/bin/activate" ]]; then
+                source mcp-creator-growth/bin/activate
+            elif [[ -f ".venv/bin/activate" ]]; then
+                source .venv/bin/activate
+            fi
+
+            if uv pip install -e '.[dev]' --reinstall --quiet; then
                 echo -e "${GREEN}  Dependencies updated.${NC}"
             else
                 echo -e "${YELLOW}  Warning: Dependency update encountered issues.${NC}"
@@ -351,7 +392,14 @@ else
             fi
             ;;
         venv)
-            if source venv/bin/activate && pip install -e '.[dev]' --force-reinstall --no-deps --quiet; then
+            # Check new location first, then legacy
+            if [[ -f "mcp-creator-growth/bin/activate" ]]; then
+                source mcp-creator-growth/bin/activate
+            elif [[ -f "venv/bin/activate" ]]; then
+                source venv/bin/activate
+            fi
+
+            if pip install -e '.[dev]' --force-reinstall --no-deps --quiet; then
                 echo -e "${GREEN}  Dependencies updated.${NC}"
             else
                 echo -e "${YELLOW}  Warning: Dependency update encountered issues.${NC}"

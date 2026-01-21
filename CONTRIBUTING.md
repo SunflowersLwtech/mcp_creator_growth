@@ -58,11 +58,11 @@ Please be respectful and constructive in all interactions. We welcome contributo
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Create virtual environment
-uv venv --python 3.11 .venv
+uv venv --python 3.11 mcp-creator-growth
 
 # Activate environment
-source .venv/bin/activate          # macOS/Linux
-# .venv\Scripts\activate           # Windows
+source mcp-creator-growth/bin/activate          # macOS/Linux
+# mcp-creator-growth\Scripts\activate           # Windows
 
 # Install with dev dependencies
 uv pip install -e '.[dev]'
@@ -75,11 +75,11 @@ uv pip install -e '.[dev]'
 
 ```bash
 # Create virtual environment
-python -m venv venv
+python -m venv mcp-creator-growth
 
 # Activate environment
-source venv/bin/activate           # macOS/Linux
-# venv\Scripts\activate            # Windows
+source mcp-creator-growth/bin/activate           # macOS/Linux
+# mcp-creator-growth\Scripts\activate            # Windows
 
 # Install with dev dependencies
 pip install -e '.[dev]'
@@ -94,12 +94,12 @@ After setup, configure Claude Code to use your local development version:
 **Using CLI (recommended):**
 ```bash
 # Add your local development server
-claude mcp add --scope local mcp-creator-growth-dev -- $(pwd)/.venv/bin/mcp-creator-growth
+claude mcp add --scope local mcp-creator-growth-dev -- $(pwd)/mcp-creator-growth/bin/mcp-creator-growth
 
 # Or with debug logging enabled
 claude mcp add --scope local mcp-creator-growth-dev \
   --env MCP_DEBUG=true \
-  -- $(pwd)/.venv/bin/mcp-creator-growth
+  -- $(pwd)/mcp-creator-growth/bin/mcp-creator-growth
 ```
 
 **Using JSON configuration** (`~/.claude.json`):
@@ -107,7 +107,7 @@ claude mcp add --scope local mcp-creator-growth-dev \
 {
   "mcpServers": {
     "mcp-creator-growth-dev": {
-      "command": "/absolute/path/to/project/.venv/bin/mcp-creator-growth",
+      "command": "/absolute/path/to/project/mcp-creator-growth/bin/mcp-creator-growth",
       "args": [],
       "env": {
         "MCP_DEBUG": "true"

@@ -169,16 +169,21 @@ cd mcp_creator_growth
 
 # 2. 创建虚拟环境并安装
 # 使用 uv（推荐）
-uv venv --python 3.11 .venv
-source .venv/bin/activate          # macOS/Linux
-# .venv\Scripts\activate           # Windows
+uv venv --python 3.11 mcp-creator-growth
+source mcp-creator-growth/bin/activate          # macOS/Linux
+# mcp-creator-growth\Scripts\activate           # Windows
 uv pip install -e '.[dev]'
 
-   # 或者使用标准 venv
-   python -m venv venv
-   source venv/bin/activate  # 或在 Windows 上使用 venv\Scripts\activate
-   pip install -e ".[dev]"
-   ```
+# 或者使用标准 venv
+python -m venv mcp-creator-growth
+source mcp-creator-growth/bin/activate           # macOS/Linux
+# mcp-creator-growth\Scripts\activate            # Windows
+pip install -e '.[dev]'
+```
+
+</details>
+
+---
 
 ## IDE 配置
 
@@ -189,10 +194,10 @@ uv pip install -e '.[dev]'
 **选项 1：CLI (推荐)**
 ```bash
 # macOS / Linux
-claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/.venv/bin/mcp-creator-growth
+claude mcp add mcp-creator-growth -- ~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth
 
 # Windows
-claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scripts\mcp-creator-growth.exe
+claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\mcp-creator-growth\Scripts\mcp-creator-growth.exe
 ```
 
 **选项 2：配置文件**
@@ -202,7 +207,7 @@ claude mcp add mcp-creator-growth -- %USERPROFILE%\mcp-creator-growth\.venv\Scri
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth"
     }
   }
 }
@@ -213,15 +218,15 @@ Windows 用户：
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
+      "command": "C:\\Users\\YourName\\mcp-creator-growth\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe"
     }
   }
 }
 ```
 
 示例路径：
-- Unix (uv): `~/mcp-creator-growth/.venv/bin/mcp-creator-growth`
-- Windows (uv): `C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe`
+- Unix (uv): `~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth`
+- Windows (uv): `C:\\Users\\YourName\\mcp-creator-growth\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 - Windows (conda): `C:\\Users\\YourName\\anaconda3\\envs\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 
 ### Cursor
@@ -231,7 +236,7 @@ Windows 用户：
 ```json
 {
   "mcp-creator-growth": {
-    "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+    "command": "~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth"
   }
 }
 ```
@@ -240,7 +245,7 @@ Windows 用户：
 ```json
 {
   "mcp-creator-growth": {
-    "command": "C:\\Users\\YourName\\mcp-creator-growth\\.venv\\Scripts\\mcp-creator-growth.exe"
+    "command": "C:\\Users\\YourName\\mcp-creator-growth\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe"
   }
 }
 ```
@@ -253,7 +258,7 @@ Windows 用户：
 {
   "mcpServers": {
     "mcp-creator-growth": {
-      "command": "~/mcp-creator-growth/.venv/bin/mcp-creator-growth"
+      "command": "~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth"
     }
   }
 }
@@ -262,7 +267,7 @@ Windows 用户：
 ### 其他 IDE
 
 对于任何兼容 MCP 的 IDE，使用这些设置：
-- **Command:** `<install-path>/.venv/bin/mcp-creator-growth` (或 Windows 上的 `.venv\Scripts\mcp-creator-growth.exe`)
+- **Command:** `<install-path>/mcp-creator-growth/bin/mcp-creator-growth` (或 Windows 上的 `mcp-creator-growth\Scripts\mcp-creator-growth.exe`)
 - **Transport:** stdio
 
 **配置完成后，重启你的 IDE。**
@@ -364,13 +369,13 @@ git pull origin main
 
 # 更新依赖
 # 使用 uv
-source .venv/bin/activate          # macOS/Linux
-# .venv\Scripts\activate           # Windows
+source mcp-creator-growth/bin/activate          # macOS/Linux
+# mcp-creator-growth\Scripts\activate           # Windows
 uv pip install -e '.[dev]' --upgrade
 
 # 或使用标准 venv
-source venv/bin/activate           # macOS/Linux
-# venv\Scripts\activate            # Windows
+source mcp-creator-growth/bin/activate           # macOS/Linux
+# mcp-creator-growth\Scripts\activate            # Windows
 pip install -e '.[dev]' --upgrade
 ```
 

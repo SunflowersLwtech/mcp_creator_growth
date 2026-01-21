@@ -75,7 +75,7 @@ if [[ ${#existing_installations[@]} -gt 0 ]]; then
     for installation in "${existing_installations[@]}"; do
         echo "  Found: $installation"
         if [[ -f "$installation/src/mcp_creator_growth/__init__.py" ]]; then
-            local version=$(grep -oP '__version__\s*=\s*"\K[^"]+' "$installation/src/mcp_creator_growth/__init__.py" 2>/dev/null || echo "unknown")
+            version=$(grep -oP '__version__\s*=\s*"\K[^"]+' "$installation/src/mcp_creator_growth/__init__.py" 2>/dev/null || echo "unknown")
             echo "  Version: $version"
         fi
     done
@@ -89,7 +89,7 @@ if [[ ${#existing_installations[@]} -gt 0 ]]; then
         exit 0
     else
         echo "Failed to download update script. Trying local update..."
-        local local_update_script="${existing_installations[0]}/scripts/update.sh"
+        local_update_script="${existing_installations[0]}/scripts/update.sh"
         if [[ -f "$local_update_script" ]]; then
             bash "$local_update_script"
             exit 0

@@ -115,6 +115,60 @@ def load_json_file(file_path: Path | str) -> dict[str, Any] | None:
         return None
 
 
+def serialize_to_toon(data: dict[str, Any] | list[Any]) -> str:
+    """
+    Serialize data to TOON (Token-Oriented Object Notation) format.
+    This is a simplified implementation focusing on token reduction via indentation.
+
+    Args:
+        data: Data to serialize
+
+    Returns:
+        TOON formatted string
+    """
+    def _to_toon_val(val: Any) -> str:
+        if isinstance(val, (str, Path)):
+            # Minimal escaping, assuming mostly code/text friendly
+            s = str(val)
+            if "\n" in s or ":" in s or "#" in s:
+                return json.dumps(s)  # Fallback to JSON string for complex chars
+            return s
+        if isinstance(val, datetime):
+            return val.isoformat()
+        if val is None:
+            return "null"
+        if isinstance(val, bool):
+            return "true" if val else "false"
+        return str(val)
+
+    def _recurse(obj: Any, level: int = 0) -> list[str]:
+        indent = "  " * level
+        lines = []
+
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    lines.append(f"{indent}{k}:")
+                    lines.extend(_recurse(v, level + 1))
+                else:
+                    lines.append(f"{indent}{k}: {_to_toon_val(v)}")
+        elif isinstance(obj, list):
+            # Check if it's a list of primitives (compact) or objects (expanded)
+            if obj and all(not isinstance(x, (dict, list)) for x in obj):
+                # Compact array style: [val, val, val] but without brackets if possible
+                # For TOON, we might just use CSV-like or simple list
+                # Simplified: use - bullet points for lists
+                for item in obj:
+                    lines.append(f"{indent}- {_to_toon_val(item)}")
+            else:
+                for item in obj:
+                    lines.append(f"{indent}-")
+                    lines.extend(_recurse(item, level + 1))
+        return lines
+
+    return "\n".join(_recurse(data))
+
+
 def serialize_session(session_data: dict[str, Any]) -> dict[str, Any]:
     """
     Serialize a session for storage.

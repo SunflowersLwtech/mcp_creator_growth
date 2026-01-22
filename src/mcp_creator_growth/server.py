@@ -9,10 +9,9 @@ the user completes the learning card.
 
 import os
 import sys
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, cast
 
 from fastmcp import FastMCP
-from mcp.types import TextContent
 from pydantic import Field
 
 from .debug import server_debug_log as debug_log
@@ -305,12 +304,15 @@ async def learning_session(
         # Import and launch the Web UI
         from .web import launch_learning_session_ui
 
+        # Cast focus_areas to list[str] to satisfy mypy
+        focus_areas_str = cast(list[str] | None, focus_areas)
+
         result = await launch_learning_session_ui(
             project_directory=project_directory,
             summary=summary,
             reasoning=reasoning,
             quizzes=quizzes,
-            focus_areas=focus_areas,
+            focus_areas=focus_areas_str,
             timeout=timeout,
         )
 

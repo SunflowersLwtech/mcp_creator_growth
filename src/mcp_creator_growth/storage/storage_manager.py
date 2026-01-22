@@ -8,7 +8,7 @@ Provides unified interface for storage operations and cross-component updates.
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from ..debug import server_debug_log as debug_log
 from .debug_index import DebugIndexManager
@@ -17,7 +17,6 @@ from .project_meta import ProjectMetaManager
 from .session_storage import SessionStorageManager
 from .path_resolver import (
     get_global_config_dir,
-    get_project_storage_path,
 )
 
 
@@ -216,12 +215,15 @@ class StorageManager:
         results["project"] = project_results
         
         # Search global patterns
+        global_count = 0
         if include_global:
             # Extract error type from query if possible
             global_patterns = self.global_index.search_bug_patterns(query)
-            results["global"] = global_patterns[:limit]
+            sliced_global = global_patterns[:limit]
+            results["global"] = sliced_global
+            global_count = len(sliced_global)
         
-        results["total_count"] = len(results["project"]) + len(results["global"])
+        results["total_count"] = len(project_results) + global_count
         
         return results
     
@@ -280,11 +282,14 @@ class StorageManager:
         
         save_json_file(output_path, export_data)
         
+        debug_records = cast(list[dict[str, Any]], export_data["debug_records"])
+        sessions = cast(list[dict[str, Any]], export_data["sessions"])
+
         return {
             "success": True,
             "path": str(output_path),
-            "debug_count": len(export_data["debug_records"]),
-            "session_count": len(export_data["sessions"]),
+            "debug_count": len(debug_records),
+            "session_count": len(sessions),
         }
     
     def cleanup(

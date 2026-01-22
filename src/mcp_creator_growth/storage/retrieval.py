@@ -88,7 +88,7 @@ class DebugRetrieval:
             return []
 
         # Phase 2: Score only the candidates (not all records)
-        scored_records = []
+        scored_records: list[dict[str, Any]] = []
         for record_id in candidate_ids:
             record = self.index_manager.get_record(record_id)
             if not record:
@@ -101,14 +101,15 @@ class DebugRetrieval:
                 })
 
         # Sort by score (descending)
-        scored_records.sort(key=lambda x: x["score"], reverse=True)
+        scored_records.sort(key=lambda x: float(x["score"]), reverse=True)
 
         # Return top results
-        results = []
+        results: list[dict[str, Any]] = []
         for item in scored_records[:limit]:
-            record = item["record"]
-            record["relevance_score"] = round(item["score"], 2)
-            results.append(record)
+            result_record = item["record"]
+            if isinstance(result_record, dict):
+                result_record["relevance_score"] = round(float(item["score"]), 2)
+                results.append(result_record)
 
         debug_log(f"Found {len(results)} relevant records")
         return results
@@ -191,8 +192,8 @@ class DebugRetrieval:
         score += solution_matches * 0.15
 
         # Search in tags
-        record_tags = " ".join(record.get("tags", [])).lower()
-        tag_matches = self._count_term_matches(expanded_terms, record_tags)
+        record_tags_str = " ".join(record.get("tags", [])).lower()
+        tag_matches = self._count_term_matches(expanded_terms, record_tags_str)
         score += tag_matches * 0.1
 
         # Exact phrase match bonus

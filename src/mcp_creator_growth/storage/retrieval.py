@@ -101,15 +101,15 @@ class DebugRetrieval:
                 })
 
         # Sort by score (descending)
-        scored_records.sort(key=lambda x: float(x["score"]), reverse=True)
+        scored_records.sort(key=lambda x: x["score"], reverse=True)
 
         # Return top results
         results: list[dict[str, Any]] = []
         for item in scored_records[:limit]:
             result_record = item["record"]
-            if isinstance(result_record, dict):
-                result_record["relevance_score"] = round(float(item["score"]), 2)
-                results.append(result_record)
+            # Record is guaranteed to be dict[str, Any] from get_record
+            result_record["relevance_score"] = round(item["score"], 2)
+            results.append(result_record)
 
         debug_log(f"Found {len(results)} relevant records")
         return results

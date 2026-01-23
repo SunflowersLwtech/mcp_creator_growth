@@ -8,7 +8,7 @@ Provides unified interface for storage operations and cross-component updates.
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from ..debug import server_debug_log as debug_log
 from .debug_index import DebugIndexManager
@@ -269,21 +269,21 @@ class StorageManager:
         from .serializers import save_json_file
         
         output_path = Path(output_path)
-        
-        # Gather all data
+
+        # Gather all data with explicit type annotations
+        debug_records: list[dict[str, Any]] = self.debug.list_records()
+        sessions: list[dict[str, Any]] = self.sessions.list_sessions(limit=1000)
+
         export_data = {
             "version": 1,
             "exported_at": datetime.now().isoformat(),
             "project_directory": str(self.project_directory),
             "metadata": self.meta.get_metadata(),
-            "debug_records": self.debug.list_records(),
-            "sessions": self.sessions.list_sessions(limit=1000),
+            "debug_records": debug_records,
+            "sessions": sessions,
         }
-        
+
         save_json_file(output_path, export_data)
-        
-        debug_records = cast(list[dict[str, Any]], export_data["debug_records"])
-        sessions = cast(list[dict[str, Any]], export_data["sessions"])
 
         return {
             "success": True,

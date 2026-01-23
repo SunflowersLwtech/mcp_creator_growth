@@ -29,8 +29,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir .
 
 # Create directory for persistent storage
-RUN mkdir -p /data/.mcp-creator-growth && \
-    chmod 777 /data/.mcp-creator-growth
+RUN mkdir -p /data/.mcp-sidecar && \
+    chmod 777 /data/.mcp-sidecar
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \

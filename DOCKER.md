@@ -98,13 +98,13 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ## Persistent Storage
 
-By default, learning sessions and debug records are stored in `/data/.mcp-creator-growth` inside the container.
+By default, learning sessions and debug records are stored in `/data/.mcp-sidecar` inside the container.
 
 To persist this data:
 
 ```bash
 docker run -i \
-  -v mcp-data:/data/.mcp-creator-growth \
+  -v mcp-data:/data/.mcp-sidecar \
   mcp-creator-growth
 ```
 

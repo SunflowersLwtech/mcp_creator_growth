@@ -52,7 +52,8 @@ function Find-ExistingInstallation {
     # Check common alternative locations
     $altPaths = @(
         "$env:USERPROFILE\Documents\mcp-creator-growth",
-        "E:\project\mcp-selfgrowth"
+        "$env:USERPROFILE\Desktop\mcp-creator-growth",
+        "$env:USERPROFILE\Projects\mcp-creator-growth"
     )
     foreach ($path in $altPaths) {
         if (Test-Path "$path\.env_manager") {

@@ -17,7 +17,6 @@ from .project_meta import ProjectMetaManager
 from .session_storage import SessionStorageManager
 from .path_resolver import (
     get_global_config_dir,
-    get_project_storage_path,
 )
 
 
@@ -216,12 +215,15 @@ class StorageManager:
         results["project"] = project_results
         
         # Search global patterns
+        global_count = 0
         if include_global:
             # Extract error type from query if possible
             global_patterns = self.global_index.search_bug_patterns(query)
-            results["global"] = global_patterns[:limit]
+            sliced_global = global_patterns[:limit]
+            results["global"] = sliced_global
+            global_count = len(sliced_global)
         
-        results["total_count"] = len(results["project"]) + len(results["global"])
+        results["total_count"] = len(project_results) + global_count
         
         return results
     
@@ -267,24 +269,27 @@ class StorageManager:
         from .serializers import save_json_file
         
         output_path = Path(output_path)
-        
-        # Gather all data
+
+        # Gather all data with explicit type annotations
+        debug_records: list[dict[str, Any]] = self.debug.list_records()
+        sessions: list[dict[str, Any]] = self.sessions.list_sessions(limit=1000)
+
         export_data = {
             "version": 1,
             "exported_at": datetime.now().isoformat(),
             "project_directory": str(self.project_directory),
             "metadata": self.meta.get_metadata(),
-            "debug_records": self.debug.list_records(),
-            "sessions": self.sessions.list_sessions(limit=1000),
+            "debug_records": debug_records,
+            "sessions": sessions,
         }
-        
+
         save_json_file(output_path, export_data)
-        
+
         return {
             "success": True,
             "path": str(output_path),
-            "debug_count": len(export_data["debug_records"]),
-            "session_count": len(export_data["sessions"]),
+            "debug_count": len(debug_records),
+            "session_count": len(sessions),
         }
     
     def cleanup(

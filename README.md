@@ -7,6 +7,7 @@ A context-aware **Model Context Protocol (MCP)** server that acts as a learning 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Standard](https://img.shields.io/badge/MCP-Standard-green.svg)](https://modelcontextprotocol.io/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://github.com/SunflowersLwtech/mcp_creator_growth/blob/main/DOCKER.md)
 [![Glama MCP](https://img.shields.io/badge/Glama-MCP%20Server-blue)](https://glama.ai/mcp/servers/@SunflowersLwtech/mcp_creator_growth)
 [![DeepWiki](https://img.shields.io/badge/DeepWiki-Documentation-purple)](https://deepwiki.com/SunflowersLwtech/mcp_creator_growth)
 
@@ -180,6 +181,33 @@ pip install -e '.[dev]'
 
 </details>
 
+### Docker Installation
+
+<details>
+<summary>Click to expand Docker installation steps</summary>
+
+**Prerequisites**: Docker installed on your system
+
+```bash
+# 1. Pull from Docker Hub (when available)
+docker pull sunflowerslwtech/mcp-creator-growth:latest
+
+# Or build locally
+git clone https://github.com/SunflowersLwtech/mcp_creator_growth.git
+cd mcp_creator_growth
+docker build -t mcp-creator-growth .
+
+# 2. Run with Docker
+docker run -i mcp-creator-growth
+
+# 3. Or use Docker Compose
+docker-compose up -d
+```
+
+For detailed Docker usage, persistent storage, and Claude Desktop integration, see **[DOCKER.md](DOCKER.md)**.
+
+</details>
+
 ---
 
 ## ⚙️ IDE Configuration
@@ -262,6 +290,32 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
   }
 }
 ```
+
+### Docker Configuration
+
+To use Docker with any MCP-compatible IDE:
+
+```json
+{
+  "mcpServers": {
+    "mcp-creator-growth": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-v",
+        "/path/to/your/project:/workspace",
+        "-w",
+        "/workspace",
+        "mcp-creator-growth"
+      ]
+    }
+  }
+}
+```
+
+See **[DOCKER.md](DOCKER.md)** for detailed Docker configuration examples for Claude Desktop, Cursor, and other IDEs.
 
 ### Other IDEs
 

@@ -6,14 +6,13 @@ Manages the FastAPI server, learning sessions, and browser integration.
 """
 
 import asyncio
-import os
 import socket
 import threading
 import time
 import uuid
 import webbrowser
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import uvicorn
 from fastapi import FastAPI, WebSocket
@@ -237,7 +236,7 @@ class WebUIManager:
         summary: str,
         reasoning: dict[str, Any] | None = None,
         quizzes: list[dict[str, Any]] | None = None,
-        focus_areas: list[str] | None = None,
+        focus_areas: Sequence[str] | None = None,
         terms: list[dict[str, Any]] | None = None,
     ) -> LearningSession:
         """
@@ -379,7 +378,7 @@ async def launch_learning_session_ui(
     summary: str,
     reasoning: dict[str, Any] | None = None,
     quizzes: list[dict[str, Any]] | None = None,
-    focus_areas: list[str] | None = None,
+    focus_areas: Sequence[str] | None = None,
     terms: list[dict[str, Any]] | None = None,
     timeout: int = 600,
 ) -> dict[str, Any]:

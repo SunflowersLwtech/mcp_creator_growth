@@ -148,7 +148,7 @@ class GlobalIndexManager:
     def get_concepts_by_category(self, category: str) -> list[dict[str, Any]]:
         """Get all concepts in a category."""
         concept_ids = self._concepts["by_category"].get(category, [])
-        return [self.get_concept(cid) for cid in concept_ids if self.get_concept(cid)]
+        return [c for cid in concept_ids if (c := self.get_concept(cid))]
 
     def add_bug_pattern(
         self,
@@ -219,7 +219,7 @@ class GlobalIndexManager:
             if error_type.lower() in err_type.lower() and err_type != error_type:
                 pattern_ids.extend(ids)
 
-        return [self.get_bug_pattern(pid) for pid in pattern_ids if self.get_bug_pattern(pid)]
+        return [b for pid in pattern_ids if (b := self.get_bug_pattern(pid))]
 
     def get_all_concepts(self) -> list[dict[str, Any]]:
         """Get all concepts."""

@@ -7,8 +7,6 @@ Provides operations for tracking shown terms and retrieving new ones.
 """
 
 import json
-import os
-import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Any

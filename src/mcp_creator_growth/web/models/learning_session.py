@@ -10,10 +10,10 @@ import asyncio
 import threading
 import time
 from enum import Enum
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any, Callable, Sequence, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Self
+    pass
 
 from fastapi import WebSocket
 
@@ -48,7 +48,7 @@ class LearningSession:
         summary: str,
         reasoning: dict[str, Any] | None = None,
         quizzes: list[dict[str, Any]] | None = None,
-        focus_areas: list[str] | None = None,
+        focus_areas: Sequence[str] | None = None,
         terms: list[dict[str, Any]] | None = None,
         warnings: list[str] | None = None,
         on_complete_callback: "Callable[[LearningSession], None] | None" = None,
@@ -72,7 +72,7 @@ class LearningSession:
         self.summary = summary
         self.reasoning = reasoning or self._generate_default_reasoning(summary)
         self.quizzes = quizzes or []
-        self.focus_areas = focus_areas or ["logic"]
+        self.focus_areas = list(focus_areas) if focus_areas else ["logic"]
         self.terms = terms or []
         self.warnings = warnings or []
 

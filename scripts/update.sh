@@ -72,10 +72,14 @@ find_installation_path() {
     local search_paths=(
         "$HOME/mcp-creator-growth"
         "$HOME/Documents/mcp-creator-growth"
+        "$HOME/Desktop/mcp-creator-growth"
+        "$HOME/projects/mcp-creator-growth"
         "/opt/mcp-creator-growth"
-        "/mnt/c/project/mcp-selfgrowth"
-        "/mnt/d/project/mcp-selfgrowth"
-        "/mnt/e/project/mcp-selfgrowth"
+        "/mnt/c/Users/${USER}/mcp-creator-growth"
+        "/mnt/c/Users/${USER}/Documents/mcp-creator-growth"
+        "/mnt/c/projects/mcp-creator-growth"
+        "/mnt/d/projects/mcp-creator-growth"
+        "/mnt/e/projects/mcp-creator-growth"
     )
 
     for path in "${search_paths[@]}"; do

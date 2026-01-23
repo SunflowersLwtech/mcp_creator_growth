@@ -44,9 +44,8 @@ function Find-InstallationPath {
     $searchPaths = @(
         (Join-Path $env:USERPROFILE "mcp-creator-growth"),
         (Join-Path $env:USERPROFILE "Documents\mcp-creator-growth"),
-        "C:\project\mcp-selfgrowth",
-        "D:\project\mcp-selfgrowth",
-        "E:\project\mcp-selfgrowth",
+        (Join-Path $env:USERPROFILE "Desktop\mcp-creator-growth"),
+        (Join-Path $env:USERPROFILE "Projects\mcp-creator-growth"),
         "C:\projects\mcp-creator-growth",
         "D:\projects\mcp-creator-growth",
         "E:\projects\mcp-creator-growth"
@@ -98,8 +97,8 @@ function Find-InstallationPath {
 
     # Method 4: Search Windows Additional Working Directories (if multiple installations)
     $workingDirs = @(
-        "C:\Users\SunFL\mcp-creator-growth",
-        "E:\project\mcp-selfgrowth"
+        (Join-Path $env:USERPROFILE "mcp-creator-growth"),
+        (Join-Path $env:USERPROFILE "Documents\mcp-creator-growth")
     )
     foreach ($dir in $workingDirs) {
         if ((Test-Path $dir) -and (Test-Path (Join-Path $dir "pyproject.toml"))) {

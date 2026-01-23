@@ -189,7 +189,7 @@ pip install -e '.[dev]'
 **Prerequisites**: Docker installed on your system
 
 ```bash
-# 1. Pull from Docker Hub (when available)
+# 1. Pull from Docker Hub
 docker pull sunflowerslwtech/mcp-creator-growth:latest
 
 # Or build locally
@@ -255,6 +255,11 @@ Example paths:
 - Unix (uv): `~/mcp-creator-growth/mcp-creator-growth/bin/mcp-creator-growth`
 - Windows (uv): `C:\\Users\\YourName\\mcp-creator-growth\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 - Windows (conda): `C:\\Users\\YourName\\anaconda3\\envs\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
+
+Path breakdown (Unix example):
+- `~/mcp-creator-growth` → repository directory
+- `mcp-creator-growth` → virtual environment directory created by uv/venv
+- `bin/mcp-creator-growth` → executable
 
 ### Cursor
 

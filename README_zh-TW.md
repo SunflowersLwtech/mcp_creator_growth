@@ -229,6 +229,11 @@ Windows 用戶：
 - Windows (uv): `C:\\Users\\YourName\\mcp-creator-growth\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 - Windows (conda): `C:\\Users\\YourName\\anaconda3\\envs\\mcp-creator-growth\\Scripts\\mcp-creator-growth.exe`
 
+路徑說明（以 Unix 示例為例）：
+- `~/mcp-creator-growth` → 倉庫目錄
+- `mcp-creator-growth` → uv/venv 建立的虛擬環境目錄
+- `bin/mcp-creator-growth` → 可執行檔
+
 ### Cursor
 
 添加到 Cursor MCP 設置 (Settings → MCP → Add Server)：

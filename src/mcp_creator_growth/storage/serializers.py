@@ -61,6 +61,40 @@ def deserialize_from_json(json_str: str) -> dict[str, Any]:
     return json.loads(json_str)
 
 
+def serialize_to_toon(data: Any) -> str:
+    """
+    Serialize data to TOON (Token-Oriented Object Notation).
+
+    TOON in this context is implemented as a highly compact JSON representation
+    with minimal separators (no whitespace) to maximize token efficiency.
+
+    Args:
+        data: Data to serialize
+
+    Returns:
+        TOON string
+    """
+    return json.dumps(
+        data,
+        cls=DateTimeEncoder,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+
+def deserialize_from_toon(toon_str: str) -> Any:
+    """
+    Deserialize TOON string to data.
+
+    Args:
+        toon_str: TOON string to parse
+
+    Returns:
+        Parsed data
+    """
+    return json.loads(toon_str)
+
+
 def save_json_file(
     file_path: Path | str,
     data: dict[str, Any],

@@ -8,6 +8,8 @@ Provides CRUD operations for debug records.
 
 import json
 import hashlib
+import math
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -104,7 +106,6 @@ class DebugIndexManager:
         Note: Debug-related terms (error, exception, bug) are intentionally
         NOT filtered as stop words since they're critical for debug search.
         """
-        import re
         # Split on non-alphanumeric, filter short/common words
         words = re.split(r'[^a-zA-Z0-9_]+', text.lower())
         # Only filter truly generic stop words, keep debug-related terms
@@ -312,8 +313,6 @@ class DebugIndexManager:
         Returns:
             List of matching record IDs, sorted by match count (TF-IDF weighted)
         """
-        import math
-
         # Expand keywords with synonyms for better recall
         expanded_keywords = self._expand_synonyms(keywords)
 

@@ -92,6 +92,10 @@ def _detect_change_type(summary: str) -> str:
     """Detect the type of change based on summary keywords."""
     summary_lower = summary.lower()
 
+    # Check for security indicators
+    if any(kw in summary_lower for kw in ["security", "vulnerab", "auth", "permission", "sanitize", "escape", "inject"]):
+        return "security"
+
     # Check for bug fix indicators
     if any(kw in summary_lower for kw in ["fix", "bug", "issue", "error", "crash", "repair", "patch", "resolve"]):
         return "bugfix"
@@ -103,10 +107,6 @@ def _detect_change_type(summary: str) -> str:
     # Check for refactoring indicators
     if any(kw in summary_lower for kw in ["refactor", "restructure", "reorganize", "clean", "simplify", "rename"]):
         return "refactor"
-
-    # Check for security indicators
-    if any(kw in summary_lower for kw in ["security", "vulnerab", "auth", "permission", "sanitize", "escape", "inject"]):
-        return "security"
 
     # Check for documentation indicators
     if any(kw in summary_lower for kw in ["document", "readme", "comment", "docstring", "doc"]):

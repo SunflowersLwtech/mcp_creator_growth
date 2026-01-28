@@ -271,8 +271,16 @@ class StorageManager:
         output_path = Path(output_path)
 
         # Gather all data with explicit type annotations
-        debug_records: list[dict[str, Any]] = self.debug.list_records()
-        sessions: list[dict[str, Any]] = self.sessions.list_sessions(limit=1000)
+        # Retrieve full records using list comprehensions with walrus operator
+        debug_records: list[dict[str, Any]] = [
+            full_record for entry in self.debug.list_records()
+            if (full_record := self.debug.get_record(entry["id"]))
+        ]
+
+        sessions: list[dict[str, Any]] = [
+            full_session for entry in self.sessions.list_sessions(limit=1000)
+            if (full_session := self.sessions.load_session(entry["session_id"]))
+        ]
 
         export_data = {
             "version": 1,

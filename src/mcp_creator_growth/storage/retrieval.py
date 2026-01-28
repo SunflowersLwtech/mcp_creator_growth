@@ -116,12 +116,10 @@ class DebugRetrieval:
 
     def _get_all_records(self) -> list[dict[str, Any]]:
         """Get all records with full data."""
-        records = []
-        for entry in self.index_manager.list_records(limit=1000):
-            full_record = self.index_manager.get_record(entry["id"])
-            if full_record:
-                records.append(full_record)
-        return records
+        return [
+            full_record for entry in self.index_manager.list_records(limit=1000)
+            if (full_record := self.index_manager.get_record(entry["id"]))
+        ]
 
     def _calculate_relevance(
         self,
@@ -294,12 +292,10 @@ class DebugRetrieval:
         Returns:
             List of recent records
         """
-        records = []
-        for entry in self.index_manager.list_records(limit=limit):
-            full_record = self.index_manager.get_record(entry["id"])
-            if full_record:
-                records.append(full_record)
-        return records
+        return [
+            full_record for entry in self.index_manager.list_records(limit=limit)
+            if (full_record := self.index_manager.get_record(entry["id"]))
+        ]
 
 
 # Alias for test compatibility
